@@ -4,7 +4,6 @@ description: >-
   Maps questionnaire_01_input.xlsx (fixed client answers) to Streamlit dashboards with tunable sidebar parameters;
   routes EMC vs LaaS vs retrofit economics using survey IDs J/H/I/K. Use when building or extending client-facing
   Streamlit apps from surveys, questionnaire_01_input, EMC, ESCO, LaaS, energy savings dashboards, or fee-split scenarios.
-disable-model-invocation: true
 ---
 
 # Questionnaire → client-specific Streamlit dashboards
