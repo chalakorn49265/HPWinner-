@@ -35,7 +35,7 @@ def load_answers(repo_root: Path | None = None) -> dict[str, Any]:
     if not path.is_file():
         raise FileNotFoundError(
             f"Missing {path}. Run: python3 read_questionnaire_input.py "
-            f"--input questionnaire_01_filled_chongqing_sales_rep.xlsx "
+            f"--input questionnaire_01_filled_chongqing_sales_rep_dropdown_number_only.xlsx "
             f"--sheet both --answers-only --compact > data/chongqing_answers.json"
         )
     return json.loads(path.read_text(encoding="utf-8"))
@@ -49,6 +49,10 @@ def _norm(s: Any) -> str:
 
 def extract_numbers(text: Any) -> list[float]:
     """Pull decimal/comma integers from free-form survey text."""
+    if isinstance(text, bool):
+        return []
+    if isinstance(text, (int, float)):
+        return [float(text)]
     s = _norm(text)
     if not s:
         return []
@@ -75,6 +79,11 @@ def first_money_like(text: Any) -> float | None:
 
 def parse_horizon_years(text: Any) -> tuple[float | None, float | None]:
     """Return (default_guess, max_hint) from H10-style strings like '5–8年'."""
+    if isinstance(text, bool):
+        return None, None
+    if isinstance(text, (int, float)):
+        y = float(text)
+        return y, y
     s = _norm(text)
     if not s:
         return None, None
@@ -111,9 +120,13 @@ def j1_implies_emc_incumbent(j1: Any) -> bool:
     return False
 
 
-def laas_signals(i2: Any, h10: Any) -> bool:
+def laas_signals(i2: Any, h10: Any, *, h7: Any = None) -> bool:
     a, b = _norm(i2), _norm(h10)
+    h7s = _norm(h7)
     combo = a + b
+    if isinstance(h10, (int, float)) and not isinstance(h10, bool) and float(h10) > 0:
+        if a or h7s:
+            return True
     if not combo.strip():
         return False
     if "LaaS" in combo or "laas" in combo.lower():
@@ -133,7 +146,7 @@ def route_dashboard(answers: dict[str, Any]) -> RouteResult:
     h10 = answers.get("H10")
 
     emc = j1_implies_emc_incumbent(j1)
-    laas = laas_signals(i2, h10)
+    laas = laas_signals(i2, h10, h7=answers.get("H7"))
 
     if emc and laas:
         story = RouteStory.EMC_AND_LAAS
@@ -151,7 +164,7 @@ def route_dashboard(answers: dict[str, Any]) -> RouteResult:
         story = RouteStory.LAAS_STYLE
         summary = (
             "Routing: lease / LaaS-style emphasis from H/I (term H10, usership I2). "
-            "Use feasible-envelope framing (no modeled IRR here)."
+            "Use feasible-envelope framing in layout; enrich with full model when available."
         )
     else:
         story = RouteStory.GENERIC

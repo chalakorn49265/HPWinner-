@@ -1,0 +1,146 @@
+config_version: "1.0.0"
+
+# Financial assumptions — HPWinner internal hurdle rates, cost benchmarks, and contract defaults.
+#
+# Each parameter has: default, min, max, unit, source, confidence.
+# These power the sliders in UI Tab 3 (Contract & financial structure).
+#
+# Monetary cost benchmarks (om_cost_per_person_day, etc.) are denominated in CNY.
+# For non-CNY deals, the UI should convert using the deal's FX rate before passing to the engine.
+#
+# VERSION NOTE: When any default, min, or max changes, bump config_version.
+# Git history on this file is the audit trail for "what did the model assume in that pitch."
+
+hpwinner_wacc:
+  display_name: "HPWinner WACC / discount rate"
+  default: 8.0
+  min: 6.0
+  max: 12.0
+  unit: "% per year"
+  source: >
+    HPWinner Finance internal hurdle rate, approved FY2025.
+    6% floor = risk-free rate + thin spread for municipal counterparty.
+    12% ceiling = required for unrated private-sector counterparty with no government guarantee.
+  confidence: "high"
+
+annual_fee_escalator:
+  display_name: "Annual service fee escalator"
+  default: 2.0
+  min: 0.0
+  max: 5.0
+  unit: "% per year"
+  source: >
+    HPWinner commercial contract precedents (2023–2025).
+    0% = fixed-fee structure (customer prefers cost certainty).
+    2% = standard fixed escalator (default, acceptable to most municipal clients).
+    5% = CPI-linked ceiling; only used when contract explicitly references CPI index.
+    G4 questionnaire answer overrides this default.
+  confidence: "high"
+
+corporate_tax_rate:
+  display_name: "Corporate income tax rate (HPWinner entity)"
+  default: 25.0
+  min: 15.0
+  max: 25.0
+  unit: "%"
+  source: >
+    PRC Enterprise Income Tax Law: standard rate 25%.
+    15% applies if HPWinner entity holds High & New Technology Enterprise (HNTE) certification.
+    Use 15% only when HNTE status confirmed for the contracting entity for the deal year.
+  confidence: "high"
+
+depreciation_yrs:
+  display_name: "Asset depreciation period (straight-line)"
+  default: 5.0
+  min: 3.0
+  max: 10.0
+  unit: "years"
+  source: >
+    PRC tax law: electronic equipment (Category IV) minimum depreciation period = 3 years.
+    Accounting standard for infrastructure assets: up to 10 years.
+    Default 5 years = conservative tax depreciation; aligns with HPWinner standard policy.
+  confidence: "high"
+
+contingency_on_capex:
+  display_name: "Capex contingency buffer"
+  default: 5.0
+  min: 0.0
+  max: 15.0
+  unit: "% added to base capex estimate"
+  source: >
+    HPWinner project delivery experience (2022–2025).
+    5% = standard domestic China retrofit.
+    10% = recommended for first-project in new city or unknown civil conditions.
+    15% = new-country / overseas deal with limited site survey data.
+  confidence: "high"
+
+default_contract_yrs:
+  display_name: "Contract length (if H1 not provided)"
+  default: 8.0
+  min: 3.0
+  max: 15.0
+  unit: "years"
+  source: >
+    HPWinner commercial team standard offering range.
+    H1 questionnaire answer takes precedence over this default whenever available.
+    3-year minimum = shortest economically viable for CAPEX recovery.
+    15-year maximum = longest HPWinner has underwritten for a single municipal contract.
+  confidence: "high"
+
+om_cost_per_person_day:
+  display_name: "O&M labor cost per person-day"
+  default: 350.0
+  min: 200.0
+  max: 600.0
+  unit: "CNY / person-day"
+  source: >
+    National labor cost benchmark for technical maintenance workers, China 2025.
+    200 CNY = low-tier city / rural area labor rate.
+    350 CNY = Tier-2 city standard (Chongqing, Wuhan, Nanjing benchmark).
+    600 CNY = Tier-1 city (Shanghai, Shenzhen, Beijing) and specialized lift-truck crew.
+    D3 questionnaire (person-days per round) × this rate = labor cost per inspection round.
+  confidence: "medium"
+
+om_cost_per_vehicle_day:
+  display_name: "O&M vehicle cost per vehicle-day (bucket truck)"
+  default: 800.0
+  min: 400.0
+  max: 1500.0
+  unit: "CNY / vehicle-day"
+  source: >
+    Fleet rental benchmarks for aerial work platforms (bucket trucks), China 2025.
+    400 CNY = small van + manual ladder (low-height fixtures, rural).
+    800 CNY = 12m scissor lift or bucket truck, standard municipal contract.
+    1500 CNY = specialized high-reach truck (>10m pole height) or Tier-1 city rental premium.
+    D4 questionnaire (vehicle-days per round) × this rate = vehicle cost per inspection round.
+  confidence: "medium"
+
+repair_cost_per_ticket:
+  display_name: "Average all-in cost per fault repair ticket"
+  default: 600.0
+  min: 150.0
+  max: 2000.0
+  unit: "CNY / incident"
+  source: >
+    Blended estimate based on HPWinner service team records and municipal client disclosures:
+      Lamp / LED module swap: ~150–300 CNY (parts + 1 person-hour labor)
+      Controller / driver fault: ~500–800 CNY (parts + 2–3 person-hours + truck roll)
+      Structural / wiring fault: ~1200–2000 CNY (civil works + specialized crew)
+    Default 600 CNY = midpoint weighted by typical distribution (60% lamp, 30% controller, 10% structural).
+    D5 questionnaire (annual fault tickets) × (1 − ticket reduction %) × this rate = avoided repair cost.
+  confidence: "medium"
+
+residual_value_pct:
+  display_name: "Asset residual value at end of contract"
+  default: 10.0
+  min: 0.0
+  max: 25.0
+  unit: "% of original capex"
+  source: >
+    Scrap / secondary market value of LED fixtures and controllers after contract end.
+    0% = fully depreciated, no secondary market (conservative; use for long contracts ≥12yr).
+    10% = typical for 8-year contract on 12-year lifetime fixture.
+    25% = generous; applicable only if contract ends significantly before fixture end-of-life.
+    H4 questionnaire (end-of-term preference) informs whether residual value accrues to
+    HPWinner (vendor retrieves) or is transferred to customer (free transfer at book value).
+  confidence: "medium"

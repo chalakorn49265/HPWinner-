@@ -1,0 +1,74 @@
+config_version: "1.0.0"
+
+# All monetary reference values (capex_per_light_cny, platform_fee_per_light_yr_cny) are
+# denominated in CNY as a reference baseline. The UI will display these in the deal's
+# declared currency (INT6) using the FX rate entered by the sales rep; the model engine
+# receives values already converted to deal currency by the orchestration layer.
+#
+# capex_per_light_cny: all-in installed cost per light (fixture + controller + install labor).
+#   Does NOT include trenching (E2×E3 from questionnaire) or civil works — those are additive.
+#   The sales rep overrides this in the UI for negotiation scenarios.
+#
+# our_failure_rate_pct: HPWinner product annual failure rate (% of fleet per year).
+#   Compare against conventional_failure_rate_pct for savings attribution.
+#   Source for all: HPWinner product spec sheets and accelerated aging test reports.
+
+products:
+
+  ai_road_lamp:
+    display_name: "AI Road Lamp (Grid-Connected)"
+    capex_per_light_cny: 1800        # fixture + NB-IoT controller + install; excl. trenching
+    expected_lifetime_yrs: 12
+    rated_wattage_W: 80              # typical spec; C2 from questionnaire overrides per-deal
+    connectivity_options:
+      - "4G"
+      - "5G"
+      - "NB-IoT"
+    trenching_required: true         # requires mains cable to each pole
+    our_failure_rate_pct: 2.0        # % of fleet per year (HPWinner spec)
+    conventional_failure_rate_pct: 8.0   # typical HPS / standard LED baseline (A7-dependent)
+    platform_fee_per_light_yr_cny: 60    # IoT platform + SIM/connectivity annual fee
+    warranty_yrs: 5
+    dimming_capable: true
+    solar_capable: false
+    battery_backup_hrs: 0
+    poles_reusable: true             # can mount on existing poles (E5 from questionnaire)
+    grid_dependent: "full"
+
+  ai_battery_lamp:
+    display_name: "AI Battery Lamp (Off-Grid / Hybrid)"
+    capex_per_light_cny: 2400        # includes integrated LFP battery pack
+    expected_lifetime_yrs: 10        # battery cycle life (LFP ~3000 cycles) limits horizon
+    rated_wattage_W: 60
+    connectivity_options:
+      - "NB-IoT"
+      - "LoRa"
+    trenching_required: false        # no mains cable; charges from grid or partial solar
+    our_failure_rate_pct: 3.0        # battery adds one more failure mode vs pure grid
+    conventional_failure_rate_pct: 8.0
+    platform_fee_per_light_yr_cny: 48
+    warranty_yrs: 3                  # battery warranty period shorter than fixture
+    dimming_capable: true
+    solar_capable: false             # grid-charged battery; not to be confused with solar lamp
+    battery_backup_hrs: 6            # sustains operation during grid outages
+    poles_reusable: true
+    grid_dependent: "partial"        # grid charges battery; outage triggers backup mode
+
+  ai_solar_lamp:
+    display_name: "AI Solar Lamp (Solar + IoT)"
+    capex_per_light_cny: 3200        # integrated solar panel + LFP battery + controller + pole
+    expected_lifetime_yrs: 10
+    rated_wattage_W: 50              # lower wattage; constrained by solar energy budget
+    connectivity_options:
+      - "NB-IoT"
+      - "LoRa"
+    trenching_required: false        # no grid cable; self-contained
+    our_failure_rate_pct: 2.5        # panel degradation adds failure mode; controller same
+    conventional_failure_rate_pct: 8.0
+    platform_fee_per_light_yr_cny: 48
+    warranty_yrs: 3
+    dimming_capable: true
+    solar_capable: true
+    battery_backup_hrs: 12           # designed for full-night autonomous operation
+    poles_reusable: false            # requires integrated solar pole (new pole in all cases)
+    grid_dependent: "none"           # E1 trenching cost becomes irrelevant for this product
