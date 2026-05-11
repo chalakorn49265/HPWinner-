@@ -58,7 +58,8 @@ def _compute_capex(
     params: ScenarioParams,
     product,  # ProductConfig
 ) -> CapexBreakdown:
-    fixtures = deal.n_lights * params.capex_per_light
+    hardware = deal.n_lights * params.hardware_cost_per_light
+    installation = deal.n_lights * params.installation_cost_per_light
 
     trenching = 0.0
     if (
@@ -69,8 +70,13 @@ def _compute_capex(
     ):
         trenching = (deal.trenching_length_m / 1000.0) * deal.trenching_cost_per_km
 
-    contingency = (fixtures + trenching) * (params.contingency_pct / 100.0)
-    return CapexBreakdown(fixtures=fixtures, trenching=trenching, contingency=contingency)
+    contingency = (hardware + installation + trenching) * (params.contingency_pct / 100.0)
+    return CapexBreakdown(
+        hardware=hardware,
+        installation=installation,
+        trenching=trenching,
+        contingency=contingency,
+    )
 
 
 def _compute_savings(
@@ -222,6 +228,7 @@ def _compute_baselines(
 
     # Baseline B: like-for-like LED replacement
     led_capex = deal.n_lights * params.capex_per_light * _LED_CAPEX_PER_LIGHT_FRACTION
+    # capex_per_light is hardware + installation; the fraction applies to the combined total
     led_elec_reduction = deal.annual_electricity_cost * _LED_WATTAGE_REDUCTION_PCT
     led_annual_opex = (
         (deal.annual_electricity_cost - led_elec_reduction)

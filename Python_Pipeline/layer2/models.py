@@ -27,8 +27,13 @@ GridDependency = Literal["full", "partial", "none"]
 
 class ProductConfig(BaseModel):
     display_name: str
-    capex_per_light_cny: float
+    hardware_cost_per_light_cny: float
+    installation_cost_per_light_cny: float
     expected_lifetime_yrs: int
+
+    @property
+    def capex_per_light_cny(self) -> float:
+        return self.hardware_cost_per_light_cny + self.installation_cost_per_light_cny
     rated_wattage_W: float
     connectivity_options: list[str]
     trenching_required: bool

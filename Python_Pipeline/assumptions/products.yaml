@@ -1,13 +1,14 @@
-config_version: "1.0.0"
+config_version: "1.1.0"
 
-# All monetary reference values (capex_per_light_cny, platform_fee_per_light_yr_cny) are
-# denominated in CNY as a reference baseline. The UI will display these in the deal's
-# declared currency (INT6) using the FX rate entered by the sales rep; the model engine
-# receives values already converted to deal currency by the orchestration layer.
+# All monetary reference values are denominated in CNY as a reference baseline.
+# The model engine receives values already converted to deal currency by the orchestration layer.
 #
-# capex_per_light_cny: all-in installed cost per light (fixture + controller + install labor).
-#   Does NOT include trenching (E2×E3 from questionnaire) or civil works — those are additive.
-#   The sales rep overrides this in the UI for negotiation scenarios.
+# hardware_cost_per_light_cny: fixture + controller unit cost ex-works (vendor quote).
+# installation_cost_per_light_cny: on-site labor per light — rigging, wiring, commissioning.
+#   Kept separate because: (a) it varies by site/city more than hardware does,
+#   (b) solar/battery lamps have no cable pull so install is faster and cheaper,
+#   (c) the sales rep can negotiate hardware and install independently.
+#   Does NOT include trenching (E2×E3 from questionnaire) — that is additive civil works.
 #
 # our_failure_rate_pct: HPWinner product annual failure rate (% of fleet per year).
 #   Compare against conventional_failure_rate_pct for savings attribution.
@@ -17,7 +18,8 @@ products:
 
   ai_road_lamp:
     display_name: "AI Road Lamp (Grid-Connected)"
-    capex_per_light_cny: 1800        # fixture + NB-IoT controller + install; excl. trenching
+    hardware_cost_per_light_cny: 1400     # fixture + NB-IoT controller (ex-works)
+    installation_cost_per_light_cny: 400  # mounting, cable pull to pole, commissioning
     expected_lifetime_yrs: 12
     rated_wattage_W: 80              # typical spec; C2 from questionnaire overrides per-deal
     connectivity_options:
@@ -37,7 +39,8 @@ products:
 
   ai_battery_lamp:
     display_name: "AI Battery Lamp (Off-Grid / Hybrid)"
-    capex_per_light_cny: 2400        # includes integrated LFP battery pack
+    hardware_cost_per_light_cny: 1900     # fixture + LFP battery pack + controller (ex-works)
+    installation_cost_per_light_cny: 500  # mounting + battery commissioning; no cable pull
     expected_lifetime_yrs: 10        # battery cycle life (LFP ~3000 cycles) limits horizon
     rated_wattage_W: 60
     connectivity_options:
@@ -56,7 +59,8 @@ products:
 
   ai_solar_lamp:
     display_name: "AI Solar Lamp (Solar + IoT)"
-    capex_per_light_cny: 3200        # integrated solar panel + LFP battery + controller + pole
+    hardware_cost_per_light_cny: 2700     # solar panel + LFP battery + controller + integrated pole
+    installation_cost_per_light_cny: 500  # pole erection + anchor + commissioning; no cable pull
     expected_lifetime_yrs: 10
     rated_wattage_W: 50              # lower wattage; constrained by solar energy budget
     connectivity_options:

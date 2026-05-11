@@ -106,9 +106,14 @@ class ScenarioParams(BaseModel):
     """
 
     # --- Tab 1: Product configuration ---
-    product_key: str                          # selects ProductConfig from Layer 2
-    capex_per_light: float                    # LC/light, all-in installed (editable)
-    platform_fee_per_light_yr: float          # LC/light/yr (IoT platform + connectivity)
+    product_key: str                              # selects ProductConfig from Layer 2
+    hardware_cost_per_light: float                # LC/light, fixture + controller (editable)
+    installation_cost_per_light: float            # LC/light, on-site labor per light (editable)
+    platform_fee_per_light_yr: float              # LC/light/yr (IoT platform + connectivity)
+
+    @property
+    def capex_per_light(self) -> float:
+        return self.hardware_cost_per_light + self.installation_cost_per_light
 
     # --- Tab 2: Savings assumptions (sliders) ---
     adaptive_dimming_pct: float = 12.0        # % further reduction on post-wattage energy
@@ -149,7 +154,8 @@ class ScenarioParams(BaseModel):
         contract_yrs = int(deal.contract_length_yrs) if (deal and deal.contract_length_yrs) else int(financial.default_contract_yrs.default)
         return cls(
             product_key=product_key,
-            capex_per_light=product.capex_per_light_cny,
+            hardware_cost_per_light=product.hardware_cost_per_light_cny,
+            installation_cost_per_light=product.installation_cost_per_light_cny,
             platform_fee_per_light_yr=product.platform_fee_per_light_yr_cny,
             contract_yrs=contract_yrs,
             hpwinner_wacc_pct=financial.hpwinner_wacc.default,
@@ -201,13 +207,14 @@ class SavingsAttribution:
 
 @dataclass
 class CapexBreakdown:
-    fixtures: float       # n_lights × capex_per_light
-    trenching: float      # from E2×E3 when applicable
-    contingency: float    # % on (fixtures + trenching)
+    hardware: float        # n_lights × hardware_cost_per_light
+    installation: float    # n_lights × installation_cost_per_light
+    trenching: float       # from E2×E3 when applicable
+    contingency: float     # % on (hardware + installation + trenching)
 
     @property
     def total(self) -> float:
-        return self.fixtures + self.trenching + self.contingency
+        return self.hardware + self.installation + self.trenching + self.contingency
 
 
 @dataclass
