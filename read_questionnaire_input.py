@@ -1,29 +1,37 @@
 #!/usr/bin/env python3
-"""Flatten questionnaire_01_input.xlsx to JSON for agents.
+"""Flatten HPWinner intake questionnaire .xlsx to JSON for agents.
 
-Expects sheets **填写** and/or **English** with header row 1 and columns:
-  A=#  B=question text  C=unit  D=answer
+Supports:
+
+- **v2** (`HPWinner_Intake_Questionnaire_v2.xlsx`): sheets ``中文_填写`` / ``EN_Form``,
+  header row 1, answers in column **E** (after 必填 / Required in D).
+- **Legacy**: sheets ``填写`` / ``English``, answers in column **D**.
+
+The answer column is detected from row 1 (looks for "回答" or "answer").
 
 Default input path (when run from monorepo root): questionnaire/questionnaire_01_input.xlsx
-Portable: pass --input explicitly when this script is copied beside a skill repo without the full tree.
 
 Usage::
 
-    python3 scripts/read_questionnaire_input.py
-    python3 scripts/read_questionnaire_input.py --input path/to/questionnaire_01_input.xlsx --sheet 填写
-    python3 scripts/read_questionnaire_input.py --answers-only --compact
+    python3 read_questionnaire_input.py --input HPWinner_Intake_Questionnaire_v2.xlsx
+    python3 read_questionnaire_input.py --input path/to/file.xlsx --sheet 中文_填写
+    python3 read_questionnaire_input.py --answers-only --compact
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
 from openpyxl import load_workbook
+
+
+_QID_RE = re.compile(r"^[A-Z]+\d+$")
 
 
 def _json_safe(value: Any) -> Any:
@@ -43,30 +51,78 @@ def _json_safe(value: Any) -> Any:
     return str(value)
 
 
+def _answer_column(ws) -> int:
+    """1-based column index for the answer cell (legacy: D=4, v2: E=5)."""
+    raw4 = ws.cell(1, 4).value
+    raw5 = ws.cell(1, 5).value
+    s4 = str(raw4).strip() if raw4 is not None else ""
+    s5 = str(raw5).strip() if raw5 is not None else ""
+    low4, low5 = s4.lower(), s5.lower()
+
+    if "回答" in s5 or low5 == "answer" or low5.startswith("answer"):
+        return 5
+    if "回答" in s4 or low4 == "answer" or low4.startswith("answer"):
+        return 4
+    return 4
+
+
+def _looks_like_question_id(qid: str) -> bool:
+    return bool(_QID_RE.match(qid.strip()))
+
+
 def _read_sheet(ws) -> list[dict[str, Any]]:
+    ans_col = _answer_column(ws)
     rows: list[dict[str, Any]] = []
     for r in range(2, ws.max_row + 1):
-        qid = ws.cell(r, 1).value
-        if qid is None or str(qid).strip() == "":
+        qid_raw = ws.cell(r, 1).value
+        if qid_raw is None or str(qid_raw).strip() == "":
+            continue
+        qid = str(qid_raw).strip()
+        if not _looks_like_question_id(qid):
             continue
         rows.append(
             {
-                "id": str(qid).strip(),
+                "id": qid,
                 "question": _json_safe(ws.cell(r, 2).value),
                 "unit": _json_safe(ws.cell(r, 3).value),
-                "answer": _json_safe(ws.cell(r, 4).value),
+                "answer": _json_safe(ws.cell(r, ans_col).value),
             }
         )
     return rows
 
 
+def default_both_sheets(sheetnames: list[str]) -> list[str]:
+    """Prefer v2 pair, then legacy pair; omit missing half."""
+    out: list[str] = []
+    if "中文_填写" in sheetnames:
+        out.append("中文_填写")
+    if "EN_Form" in sheetnames:
+        out.append("EN_Form")
+    if out:
+        return out
+    if "填写" in sheetnames:
+        out.append("填写")
+    if "English" in sheetnames:
+        out.append("English")
+    if out:
+        return out
+    raise ValueError(
+        "No known data sheets. Expected "
+        "「中文_填写」/「EN_Form」 (v2) or 「填写」/「English」 (legacy). "
+        f"Found: {sheetnames}"
+    )
+
+
 def flatten_workbook(path: Path, sheets: list[str]) -> dict[str, Any]:
     wb = load_workbook(path, data_only=True)
     out: dict[str, Any] = {"source": str(path.resolve()), "sheets": {}}
-    for name in sheets:
-        if name not in wb.sheetnames:
-            raise ValueError(f"Sheet {name!r} not in workbook; have: {wb.sheetnames}")
-        out["sheets"][name] = {"rows": _read_sheet(wb[name])}
+    try:
+        for name in sheets:
+            if name not in wb.sheetnames:
+                raise ValueError(f"Sheet {name!r} not in workbook; have: {wb.sheetnames}")
+            out["sheets"][name] = {"rows": _read_sheet(wb[name])}
+    finally:
+        wb.close()
     return out
 
 
@@ -80,6 +136,15 @@ def answers_dict(flat: dict[str, Any], sheet_name: str) -> dict[str, Any]:
     return d
 
 
+def primary_answers_sheet(flat: dict[str, Any]) -> str:
+    keys = flat["sheets"]
+    if "中文_填写" in keys:
+        return "中文_填写"
+    if "填写" in keys:
+        return "填写"
+    return next(iter(keys))
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
@@ -87,19 +152,20 @@ def main(argv: list[str] | None = None) -> int:
         "-i",
         type=Path,
         default=None,
-        help="Path to questionnaire_01_input.xlsx (default: questionnaire/questionnaire_01_input.xlsx under cwd)",
+        help="Path to questionnaire .xlsx (default: questionnaire/questionnaire_01_input.xlsx under cwd)",
     )
     p.add_argument(
         "--sheet",
         "-s",
-        choices=("填写", "English", "both"),
         default="both",
-        help="Which data sheet(s) to export (default: both)",
+        metavar="NAME",
+        help='Export sheet(s): "both" (default: v2 or legacy pair), or one of: '
+        "中文_填写, EN_Form, 填写, English",
     )
     p.add_argument(
         "--answers-only",
         action="store_true",
-        help="Emit only { id: answer } from the first exported sheet (填写 if present in workbook)",
+        help="Emit only { id: answer } from the primary sheet (中文_填写 or 填写 when present)",
     )
     p.add_argument(
         "--compact",
@@ -116,9 +182,22 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: file not found: {path}", file=sys.stderr)
         return 1
 
+    wb = load_workbook(path, data_only=True, read_only=True)
+    try:
+        names = list(wb.sheetnames)
+    finally:
+        wb.close()
+
     if args.sheet == "both":
-        sheets = ["填写", "English"]
+        try:
+            sheets = default_both_sheets(names)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
     else:
+        if args.sheet not in names:
+            print(f"error: sheet {args.sheet!r} not in workbook; have: {names}", file=sys.stderr)
+            return 1
         sheets = [args.sheet]
 
     try:
@@ -128,8 +207,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if args.answers_only:
-        primary = "填写" if "填写" in flat["sheets"] else sheets[0]
-        payload = answers_dict(flat, primary)
+        payload = answers_dict(flat, primary_answers_sheet(flat))
     else:
         payload = flat
 
