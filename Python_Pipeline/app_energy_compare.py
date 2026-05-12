@@ -494,7 +494,10 @@ def _stakeholder_map_html(
     b3 = deal.annual_capex_budget if deal.annual_capex_budget is not None else 0.0
     if b3 > 1e-9 or capex_saving > 1e-6:
         parts_s.append(f'{T("em_cat_capex")} −{_fmt_cny_plain(capex_saving)}')
-    savings_break = " · ".join(parts_s) + f" · Σ {_fmt_cny_plain(client_save_y1)} {esc(currency)}/yr"
+    savings_break = (
+        " · ".join(parts_s)
+        + f" · {T('em_cat_total')} {_fmt_cny_plain(client_save_y1)} {esc(currency)}/yr"
+    )
     b3_note_html = ""
     if b3 <= 1e-9 and capex_saving <= 1e-6:
         b3_note_html = (
@@ -579,7 +582,7 @@ def _stakeholder_map_html(
   padding-bottom: 4px;
 }}
 .stmap-pool .metric:last-child {{ border-bottom: none; }}
-.stmap-pool .metric b {{ color: var(--teal); }}
+.stmap-pool .metric strong {{ color: var(--teal); }}
 .stmap-foot {{
   margin-top: 14px;
   font-size: 0.68rem;
@@ -617,18 +620,18 @@ def _stakeholder_map_html(
     <div class="stmap-col" style="flex:1.35 1 200px;">
       <h3>{T("em_stake_col_pool")}</h3>
       <div class="stmap-card stmap-pool">
-        <div class="metric"><b>{T("em_stake_pool_audit")}</b><br/>
+        <div class="metric"><strong>{T("em_stake_pool_audit")}</strong><br/>
           {esc(audit["audit_elec_last"])} · {esc(audit["audit_om_last"])}</div>
-        <div class="metric"><b>{T("em_stake_pool_audit_range")}</b><br/>{esc(audit["audit_elec_rng"])}</div>
-        <div class="metric"><b>{T("em_stake_pool_audit_om_range")}</b><br/>{esc(audit["audit_om_rng"])}</div>
-        <div class="metric"><b>{T("em_stake_pool_project")}</b><br/>
+        <div class="metric"><strong>{T("em_stake_pool_audit_range")}</strong><br/>{esc(audit["audit_elec_rng"])}</div>
+        <div class="metric"><strong>{T("em_stake_pool_audit_om_range")}</strong><br/>{esc(audit["audit_om_rng"])}</div>
+        <div class="metric"><strong>{T("em_stake_pool_project")}</strong><br/>
           B1 {_fmt_cny_plain(deal.annual_electricity_cost)} + B2 {_fmt_cny_plain(deal.annual_om_cost)} = {_fmt_cny_plain(b1b2)} {esc(currency)}/yr</div>
-        <div class="metric"><b>{T("em_stake_pool_savings")}</b><br/>
+        <div class="metric"><strong>{T("em_stake_pool_savings")}</strong><br/>
           {savings_break}{b3_note_html}<br/>
           <span style="font-size:0.65rem;color:var(--muted)">{T("em_hero_gross")} {T("em_stake_engine_suffix")}: {_fmt_cny_plain(s_total_gross)} {esc(currency)}/yr</span></div>
-        <div class="metric"><b>{T("em_stake_pool_invest")}</b><br/>{_fmt_cny_plain(capex_total)} {esc(currency)}</div>
-        <div class="metric"><b>{T("em_stake_pool_contract_val")}</b><br/>{esc(h5_s)}</div>
-        <div class="metric"><b>{T("em_stake_pool_expected_save")}</b><br/>{esc(g6_s)}</div>
+        <div class="metric"><strong>{T("em_stake_pool_invest")}</strong><br/>{_fmt_cny_plain(capex_total)} {esc(currency)}</div>
+        <div class="metric"><strong>{T("em_stake_pool_contract_val")}</strong><br/>{esc(h5_s)}</div>
+        <div class="metric"><strong>{T("em_stake_pool_expected_save")}</strong><br/>{esc(g6_s)}</div>
       </div>
     </div>
     <div class="stmap-arrow">→<small>{T("em_stake_edge_to_out")}</small></div>

@@ -624,6 +624,61 @@ _STRINGS: dict[str, dict[str, Any]] = {
     },
 }
 
+# Last-resort English strings for the energy-compare stakeholder iframe. Partial deploys that
+# ship an older ``_STRINGS`` table must still resolve these keys (otherwise raw ``em_*`` appears).
+_STAKEHOLDER_MAP_FALLBACK_EN: dict[str, str] = {
+    "em_hero_gross": "Annual savings (charts)",
+    "em_stake_engine_suffix": "(engine model)",
+    "em_cat_elec": "Electricity",
+    "em_cat_om": "O&M (labor + repairs)",
+    "em_cat_capex": "Equipment / replacement budget",
+    "em_cat_total": "Total",
+    "em_stake_page_title": "Stakeholder & value flow",
+    "em_stake_project_line": "Current deal: {deal_id}",
+    "em_stake_col_gov": "Public sector & sponsor",
+    "em_stake_col_market": "Procurement & vendor",
+    "em_stake_col_middle": "Hosting boundary & platform",
+    "em_stake_col_pool": "Quantified baseline & case",
+    "em_stake_col_out": "Outcomes",
+    "em_stake_node_district": "District leadership",
+    "em_stake_node_district_sub": "Timeline / policy steer",
+    "em_stake_node_urban_mgmt": "Urban management bureau",
+    "em_stake_node_urban_mgmt_sub": "Regulation & street-light sector",
+    "em_stake_node_dev_group": "Urban development / platform SOE",
+    "em_stake_node_dev_group_sub": "Typical hosting implementation owner",
+    "em_stake_node_tender": "Tendering & procurement",
+    "em_stake_node_tender_sub": "Agent, bidding, contract packaging",
+    "em_stake_node_hpwinner": "HPWinner",
+    "em_stake_node_hpwinner_sub": "AI product, delivery, O&M uplift",
+    "em_stake_node_hosting": "Energy hosting scope",
+    "em_stake_node_ai_platform": "AI lamp + digital layer",
+    "em_stake_edge_to_middle": "Scope & mandate",
+    "em_stake_edge_data_in": "Baseline & telemetry",
+    "em_stake_edge_feedback": "Reporting & optimization loop",
+    "em_stake_edge_to_out": "Contracted outcomes",
+    "em_stake_pool_audit": "Audit history (latest year)",
+    "em_stake_pool_audit_range": "Electricity range (3yr)",
+    "em_stake_pool_audit_om_range": "O&M range (3yr)",
+    "em_stake_pool_project": "Project baseline (B1+B2)",
+    "em_stake_pool_savings": "Modeled annual savings (display)",
+    "em_stake_pool_b3_note": (
+        "B3 (annual equipment / replacement budget) not filled — "
+        "avoided-replacement saving is not modeled (0)."
+    ),
+    "em_stake_pool_invest": "Project investment (CAPEX)",
+    "em_stake_pool_contract_val": "Indicative contract total (H5)",
+    "em_stake_pool_expected_save": "Expected annual savings (G6)",
+    "em_stake_out_contract": "Contract term",
+    "em_stake_out_energy": "Annual kWh saved",
+    "em_stake_out_carbon": "Annual CO₂ reduction",
+    "em_stake_out_savings_rate": "Savings rate (display)",
+    "em_stake_out_fee": "Mgmt fee share of gross savings",
+    "em_stake_footnote": (
+        "Roles are illustrative for energy-hosting roadshows; adapt names to the local org chart. "
+        "Numbers match the tabs above for this run."
+    ),
+}
+
 # Active language — set by the app before calling t()
 _lang = "en"
 
@@ -635,7 +690,11 @@ def set_lang(lang: str) -> None:
 
 def t(key: str, **kwargs: Any) -> Any:
     """Look up a translation string and optionally format it."""
-    val = _STRINGS[_lang].get(key) or _STRINGS["en"].get(key, key)
+    val = (
+        _STRINGS[_lang].get(key)
+        or _STRINGS["en"].get(key)
+        or _STAKEHOLDER_MAP_FALLBACK_EN.get(key, key)
+    )
     if kwargs and isinstance(val, str):
         return val.format(**kwargs)
     return val
