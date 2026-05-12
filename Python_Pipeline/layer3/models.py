@@ -44,11 +44,14 @@ class DealInputs(BaseModel):
     # trenching/contingency calculations.
     project_investment_cny: Optional[float] = None  # B6
 
-    # Multi-year history for trend analysis (能源托管 dashboard contrast view)
-    annual_electricity_y_minus_1: Optional[float] = None  # B1a
+    # Multi-year history for trend analysis (能源托管 dashboard — audit / full-scope
+    # totals; NOT the same as B1/B2 project baseline). Chronological: y-3 oldest … y-1 newest.
+    annual_electricity_y_minus_3: Optional[float] = None  # B1c
     annual_electricity_y_minus_2: Optional[float] = None  # B1b
-    annual_om_y_minus_1: Optional[float] = None           # B2a
+    annual_electricity_y_minus_1: Optional[float] = None  # B1a
+    annual_om_y_minus_3: Optional[float] = None           # B2c
     annual_om_y_minus_2: Optional[float] = None           # B2b
+    annual_om_y_minus_1: Optional[float] = None           # B2a
 
     # Scope detail
     pole_count: Optional[int] = None                      # A5b — distinct from fixture count (A5)

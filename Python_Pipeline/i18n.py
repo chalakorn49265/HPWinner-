@@ -182,7 +182,8 @@ _STRINGS: dict[str, dict[str, Any]] = {
         # Hero strip
         "em_hero_title":     "Energy Savings Analysis — {deal_id}",
         "em_hero_kwh_saved": "Annual kWh saved",
-        "em_hero_gross":     "Annual gross savings",
+        "em_hero_gross":     "Annual savings (charts)",
+        "em_hero_gross_engine_note": "Full model (uncapped): {engine}",
         "em_hero_rate":      "Savings rate",
         "em_hero_net_total": "Client net savings ({yrs}yr total)",
         "em_hero_co2":       "Annual CO₂ reduction",
@@ -192,6 +193,51 @@ _STRINGS: dict[str, dict[str, Any]] = {
         "em_tab_detail":   "💧 Savings Detail",
         "em_tab_multi":    "📅 Multi-Year",
         "em_tab_tech":     "🔧 Technical Specs",
+        "em_tab_stakeholders": "🗺️ Stakeholder Map",
+
+        # Stakeholder map tab (energy management pitch)
+        "em_stake_page_title":   "Stakeholder & value flow",
+        "em_stake_project_line": "Current deal: {deal_id}",
+        "em_stake_col_gov":     "Public sector & sponsor",
+        "em_stake_col_market":  "Procurement & vendor",
+        "em_stake_col_middle":  "Hosting boundary & platform",
+        "em_stake_col_pool":    "Quantified baseline & case",
+        "em_stake_col_out":     "Outcomes",
+        "em_stake_node_district":      "District leadership",
+        "em_stake_node_district_sub":  "Timeline / policy steer",
+        "em_stake_node_urban_mgmt":    "Urban management bureau",
+        "em_stake_node_urban_mgmt_sub":"Regulation & street-light sector",
+        "em_stake_node_dev_group":     "Urban development / platform SOE",
+        "em_stake_node_dev_group_sub": "Typical hosting implementation owner",
+        "em_stake_node_tender":        "Tendering & procurement",
+        "em_stake_node_tender_sub":    "Agent, bidding, contract packaging",
+        "em_stake_node_hpwinner":     "HPWinner",
+        "em_stake_node_hpwinner_sub":  "AI product, delivery, O&M uplift",
+        "em_stake_node_hosting":      "Energy hosting scope",
+        "em_stake_node_ai_platform":  "AI lamp + digital layer",
+        "em_stake_edge_to_middle":    "Scope & mandate",
+        "em_stake_edge_data_in":       "Baseline & telemetry",
+        "em_stake_edge_feedback":      "Reporting & optimization loop",
+        "em_stake_edge_to_out":        "Contracted outcomes",
+        "em_stake_pool_audit":         "Audit history (latest year)",
+        "em_stake_pool_audit_range": "Electricity range (3yr)",
+        "em_stake_pool_audit_om_range": "O&M range (3yr)",
+        "em_stake_pool_project":       "Project baseline (B1+B2)",
+        "em_stake_pool_savings":       "Modeled annual savings (display)",
+        "em_stake_pool_b3_note":      "B3 (annual equipment / replacement budget) not filled — "
+                                      "avoided-replacement saving is not modeled (0).",
+        "em_stake_pool_invest":        "Project investment (CAPEX)",
+        "em_stake_pool_contract_val": "Indicative contract total (H5)",
+        "em_stake_pool_expected_save": "Expected annual savings (G6)",
+        "em_stake_engine_suffix":     "(engine model)",
+        "em_stake_out_contract":      "Contract term",
+        "em_stake_out_energy":       "Annual kWh saved",
+        "em_stake_out_carbon":       "Annual CO₂ reduction",
+        "em_stake_out_savings_rate": "Savings rate (display)",
+        "em_stake_out_fee":          "Mgmt fee share of gross savings",
+        "em_stake_footnote":          "Roles are illustrative for energy-hosting roadshows; "
+                                      "adapt names to the local org chart. Numbers match the "
+                                      "tabs above for this run.",
 
         # Cost comparison tab
         "em_compare_title":   "Annual Cost: Before vs After",
@@ -239,16 +285,22 @@ _STRINGS: dict[str, dict[str, Any]] = {
         # Capex source caption
         "em_capex_source":     "Source: {source}",
 
-        # 3-Year history trend (Cost Comparison tab)
+        # 3-Year history trend (Cost Comparison tab) — audit / full-scope only (B1c–B1a, B2c–B2a)
+        "em_history_section":  "Full-scope historical trend (audit)",
+        "em_project_compare_section": "Project scope — status quo vs HPWinner",
         "em_history_title":    "3-Year Historical Cost Trend",
-        "em_history_help":     "Customer's actual annual costs over the past 3 years "
-                               "(from B1/B1a/B1b and B2/B2a/B2b). Validates the baseline "
-                               "trajectory before contrasting with HPWinner solution.",
-        "em_history_y_minus_2":"Y-2 (oldest)",
-        "em_history_y_minus_1":"Y-1",
+        "em_history_help":     "Stacked electricity + O&M from questionnaire fields **B1c / B1b / B1a** "
+                               "and **B2c / B2b / B2a** (chronological: oldest → newest). "
+                               "These should be city- or audit-level totals. "
+                               "**B1 / B2** are the project baseline only — shown in the chart below, "
+                               "not mixed into this history.",
+        "em_history_y_minus_3":"Y-3 (oldest)",
+        "em_history_y_minus_2":"Y-2",
+        "em_history_y_minus_1":"Y-1 (newest historic)",
         "em_history_y_0":      "Y0 (most recent)",
         "em_history_after":    "After HPWinner",
-        "em_history_no_data":  "No multi-year history in questionnaire (B1a/B1b/B2a/B2b empty).",
+        "em_history_no_data":  "Need at least two historic year-pairs (B1c/B1b/B1a + B2c/B2b/B2a). "
+                               "Partial rows can be left blank; leading blank years are ignored.",
         "em_history_trend_up": "⚠️ Costs trending UP — strong case for HPWinner intervention.",
         "em_history_trend_dn": "Costs trending DOWN — verify savings projection is realistic.",
         "em_history_trend_flat":"Costs roughly flat.",
@@ -438,7 +490,8 @@ _STRINGS: dict[str, dict[str, Any]] = {
         # Hero strip
         "em_hero_title":     "节能分析 — {deal_id}",
         "em_hero_kwh_saved": "年节电量",
-        "em_hero_gross":     "年总节省",
+        "em_hero_gross":     "年节省（与图表一致）",
+        "em_hero_gross_engine_note": "完整模型（未封顶）: {engine}",
         "em_hero_rate":      "节省率",
         "em_hero_net_total": "客户合同期净节省（{yrs}年）",
         "em_hero_co2":       "年碳减排",
@@ -448,6 +501,49 @@ _STRINGS: dict[str, dict[str, Any]] = {
         "em_tab_detail":   "💧 节能详情",
         "em_tab_multi":    "📅 多年展望",
         "em_tab_tech":     "🔧 技术参数",
+        "em_tab_stakeholders": "🗺️ 利益相关方地图",
+
+        # Stakeholder map tab
+        "em_stake_page_title":   "利益相关方与价值流",
+        "em_stake_project_line": "当前项目：{deal_id}",
+        "em_stake_col_gov":     "公共部门与业主方",
+        "em_stake_col_market":  "招标与供应商",
+        "em_stake_col_middle":  "托管边界与平台层",
+        "em_stake_col_pool":    "量化基线与本案数据",
+        "em_stake_col_out":     "成果与合同产出",
+        "em_stake_node_district":      "区领导 / 区级统筹",
+        "em_stake_node_district_sub":  "时间节点与政策导向",
+        "em_stake_node_urban_mgmt":    "城管局（行业主管）",
+        "em_stake_node_urban_mgmt_sub":"路灯行业监管与立项",
+        "em_stake_node_dev_group":     "城发集团等平台公司",
+        "em_stake_node_dev_group_sub": "能源托管常见实施主体",
+        "em_stake_node_tender":        "招标代理与采购流程",
+        "em_stake_node_tender_sub":    "挂网、评标、合同打包",
+        "em_stake_node_hpwinner":     "惠普纳",
+        "em_stake_node_hpwinner_sub":  "AI 路灯产品与交付、运维提升",
+        "em_stake_node_hosting":      "托管合同范围",
+        "em_stake_node_ai_platform":  "AI 灯具 + 数字化中台",
+        "em_stake_edge_to_middle":    "授权与托管边界",
+        "em_stake_edge_data_in":       "基线数据与运行数据",
+        "em_stake_edge_feedback":     "报表反馈与优化闭环",
+        "em_stake_edge_to_out":        "合同约定成果",
+        "em_stake_pool_audit":         "审计口径（最近历史年）",
+        "em_stake_pool_audit_range": "电费区间（近三年）",
+        "em_stake_pool_audit_om_range": "运维费区间（近三年）",
+        "em_stake_pool_project":       "本项目基线（B1+B2）",
+        "em_stake_pool_savings":       "年化节省（本页展示口径）",
+        "em_stake_pool_b3_note":      "问卷未填 B3（年度设备更换预算）— “避免的更换支出”未计入模型（显示为 0）。",
+        "em_stake_pool_invest":        "项目投资（CAPEX）",
+        "em_stake_pool_contract_val": "合同金额参考（H5）",
+        "em_stake_pool_expected_save": "预期年节费（G6）",
+        "em_stake_engine_suffix":     "（引擎口径）",
+        "em_stake_out_contract":      "合同年限",
+        "em_stake_out_energy":       "年节电量",
+        "em_stake_out_carbon":       "年减排 CO₂",
+        "em_stake_out_savings_rate": "节省率（展示口径）",
+        "em_stake_out_fee":          "托管费占毛节省比例",
+        "em_stake_footnote":          "角色为能源托管路演示意，请按当地组织架构替换称谓。"
+                                      "图中数字与本页上方各 Tab 当前运行结果一致。",
 
         # Cost comparison tab
         "em_compare_title":   "年度成本对比：改造前 vs 改造后",
@@ -495,15 +591,18 @@ _STRINGS: dict[str, dict[str, Any]] = {
         # Capex source caption
         "em_capex_source":     "数据来源：{source}",
 
-        # 3-Year history trend (Cost Comparison tab)
+        # 3-Year history trend — 全区/审计口径，与项目 B1/B2 基线分开
+        "em_history_section":  "全区历史成本趋势（审计口径）",
+        "em_project_compare_section": "本项目托管范围 — 现状 vs 惠普纳方案",
         "em_history_title":    "近 3 年成本趋势",
-        "em_history_help":     "客户过去 3 年实际年度成本（来自问卷 B1/B1a/B1b 和 B2/B2a/B2b）。"
-                               "用于校验基线轨迹，再与惠普纳方案对比。",
-        "em_history_y_minus_2":"Y-2（最久）",
-        "em_history_y_minus_1":"Y-1",
+        "em_history_help":     "电费与维护费分别来自问卷 **B1c / B1b / B1a** 与 **B2c / B2b / B2a**（时间顺序：最早 → 最近历史年），"
+                               "应为全区或审计口径合计。**B1、B2** 仅表示本次托管/改造范围的年化基线，只在下方对比图中参与建模，不混入上图。",
+        "em_history_y_minus_3":"Y-3（最早）",
+        "em_history_y_minus_2":"Y-2",
+        "em_history_y_minus_1":"Y-1（最近历史年）",
         "em_history_y_0":      "Y0（最近年度）",
         "em_history_after":    "惠普纳方案后",
-        "em_history_no_data":  "问卷中无多年历史数据（B1a/B1b/B2a/B2b 未填）。",
+        "em_history_no_data":  "至少需要填写两个历史年度（可多档留空；打头空白年度会自动忽略）。请填写 B1c/B1b/B1a 与对应的 B2c/B2b/B2a。",
         "em_history_trend_up": "⚠️ 成本上涨趋势 — 强化了引入惠普纳方案的紧迫性。",
         "em_history_trend_dn": "成本下降趋势 — 需复核节能预测的合理性。",
         "em_history_trend_flat":"成本基本持平。",
