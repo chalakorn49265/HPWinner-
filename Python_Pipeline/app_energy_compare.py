@@ -342,16 +342,18 @@ def _history_stack_pairs(deal: DealInputs) -> Tuple[List[float], List[float], Li
 
     Uses only B1c/B1b/B1a and B2c/B2b/B2a (audit / full-scope). Project baseline B1/B2
     must not appear here — it is modeled separately in the grouped comparison chart.
+
+    Uses ``getattr`` so older ``DealInputs`` / hot-reload mismatches do not crash the app.
     """
     elec_raw = [
-        deal.annual_electricity_y_minus_3,
-        deal.annual_electricity_y_minus_2,
-        deal.annual_electricity_y_minus_1,
+        getattr(deal, "annual_electricity_y_minus_3", None),
+        getattr(deal, "annual_electricity_y_minus_2", None),
+        getattr(deal, "annual_electricity_y_minus_1", None),
     ]
     om_raw = [
-        deal.annual_om_y_minus_3,
-        deal.annual_om_y_minus_2,
-        deal.annual_om_y_minus_1,
+        getattr(deal, "annual_om_y_minus_3", None),
+        getattr(deal, "annual_om_y_minus_2", None),
+        getattr(deal, "annual_om_y_minus_1", None),
     ]
     pairs: List[Tuple[float, float]] = [
         ((e or 0.0), (o or 0.0)) for e, o in zip(elec_raw, om_raw)

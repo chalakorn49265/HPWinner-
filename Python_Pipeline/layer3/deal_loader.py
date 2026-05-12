@@ -10,7 +10,7 @@ The engine itself (engine.py) only sees DealInputs — it is ID-agnostic.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def _to_float(v: Any) -> Optional[float]:
@@ -94,6 +94,19 @@ def from_answers(answers: Dict[str, Any]) -> "DealInputs":
                 "Check that the questionnaire filled the right columns."
             )
 
+    _hist_pairs: List[Tuple[str, str]] = [
+        ("annual_electricity_y_minus_3", "B1c"),
+        ("annual_electricity_y_minus_2", "B1b"),
+        ("annual_electricity_y_minus_1", "B1a"),
+        ("annual_om_y_minus_3", "B2c"),
+        ("annual_om_y_minus_2", "B2b"),
+        ("annual_om_y_minus_1", "B2a"),
+    ]
+    hist_kwargs: Dict[str, Any] = {}
+    for fname, qid in _hist_pairs:
+        if fname in DealInputs.model_fields:
+            hist_kwargs[fname] = _to_float(answers.get(qid))
+
     return DealInputs(
         # Metadata
         deal_id=deal_id,
@@ -106,12 +119,7 @@ def from_answers(answers: Dict[str, Any]) -> "DealInputs":
         annual_om_cost=annual_om_cost or 0.0,
         annual_capex_budget=_to_float(answers.get("B3")),
         project_investment_cny=_to_float(answers.get("B6")),
-        annual_electricity_y_minus_3=_to_float(answers.get("B1c")),
-        annual_electricity_y_minus_1=_to_float(answers.get("B1a")),
-        annual_electricity_y_minus_2=_to_float(answers.get("B1b")),
-        annual_om_y_minus_3=_to_float(answers.get("B2c")),
-        annual_om_y_minus_1=_to_float(answers.get("B2a")),
-        annual_om_y_minus_2=_to_float(answers.get("B2b")),
+        **hist_kwargs,
         pole_count=_to_int(answers.get("A5b")),
         expected_annual_savings=_to_float(answers.get("G6")),
         contract_total_value=_to_float(answers.get("H5")),
