@@ -131,12 +131,13 @@ class ScenarioParams(BaseModel):
 
     # --- Tab 3: Contract & financial structure ---
     contract_yrs: int = 8
-    hpwinner_savings_share_pct: float = 70.0  # HPWinner's cut of total verified savings
-                                               # Customer keeps (100 - this)%
+    annual_service_fee_per_light: float = 0.0  # LC/light/yr — the fee HPWinner charges
+                                                # the customer. Set directly by the internal
+                                                # team. Must be > 0 for the engine to run.
     annual_fee_escalator_pct: float = 2.0
     hpwinner_wacc_pct: float = 8.0
     contingency_pct: float = 5.0
-    residual_value_pct: float = 10.0          # % of capex recovered at end of contract
+    residual_value_pct: float = 10.0
 
     @classmethod
     def from_defaults(
@@ -148,8 +149,8 @@ class ScenarioParams(BaseModel):
     ) -> "ScenarioParams":
         """Build a ScenarioParams seeded with Layer 2 defaults.
 
-        If deal is provided, H1 overrides contract_yrs and G4/questionnaire
-        context is noted (not yet auto-applied here — that's the UI's job).
+        annual_service_fee_per_light is initialised to 0 — the team must set it.
+        A suggested starting point is available via suggest_fee_per_light().
         """
         contract_yrs = int(deal.contract_length_yrs) if (deal and deal.contract_length_yrs) else int(financial.default_contract_yrs.default)
         return cls(
@@ -158,6 +159,7 @@ class ScenarioParams(BaseModel):
             installation_cost_per_light=product.installation_cost_per_light_cny,
             platform_fee_per_light_yr=product.platform_fee_per_light_yr_cny,
             contract_yrs=contract_yrs,
+            annual_service_fee_per_light=0.0,
             hpwinner_wacc_pct=financial.hpwinner_wacc.default,
             annual_fee_escalator_pct=financial.annual_fee_escalator.default,
             contingency_pct=financial.contingency_on_capex.default,
@@ -166,6 +168,16 @@ class ScenarioParams(BaseModel):
             om_cost_per_vehicle_day=financial.om_cost_per_vehicle_day.default,
             repair_cost_per_ticket=financial.repair_cost_per_ticket.default,
         )
+
+    def suggest_fee_per_light(self, deal: DealInputs) -> float:
+        """Return a starting-point fee per light for the team to adjust.
+
+        Logic: recover CAPEX over contract + cover platform costs + 30% margin.
+        This is a floor estimate — the team should raise it until NPV is acceptable.
+        """
+        capex_recovery = self.capex_per_light / self.contract_yrs
+        platform = self.platform_fee_per_light_yr
+        return round((capex_recovery + platform) * 1.30)
 
 
 # ---------------------------------------------------------------------------
@@ -254,6 +266,7 @@ class ModelOutputs:
     annual_savings: SavingsAttribution  # year-1 values (pre-escalation)
     annual_service_fee_y1: float        # what customer pays HPWinner in year 1
     annual_platform_costs: float        # HPWinner's annual IoT opex
+    hpwinner_implied_savings_share_pct: Optional[float]  # fee / total_savings — informational
 
     yearly_cashflows: List[YearlyCashflow]
 

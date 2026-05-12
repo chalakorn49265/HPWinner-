@@ -290,7 +290,7 @@ def _go_nogo(
         flags.append("borderline")
         reasons.append(
             "Customer does not benefit in Year 1 — service fee exceeds baseline cost; "
-            "reconsider HPWinner savings share or capex"
+            "lower the fee or increase contract length"
         )
 
     if deal.customer_fiscal_stress == "Yes":
@@ -369,17 +369,31 @@ def run_model(
     # 2. Savings attribution (Year 1, pre-escalation)
     savings = _compute_savings(deal, params, product)
 
-    # 3. Service fee and HPWinner annual opex
-    annual_service_fee_y1 = savings.total * (params.hpwinner_savings_share_pct / 100.0)
+    # 3. Service fee — set directly by the internal team as LC/light/yr
+    if params.annual_service_fee_per_light <= 0:
+        warnings.append(
+            "annual_service_fee_per_light is 0 — set it via the dashboard slider. "
+            f"Suggested floor: {params.suggest_fee_per_light(deal):,.0f} {deal.currency}/light/yr"
+        )
+    annual_service_fee_y1 = params.annual_service_fee_per_light * deal.n_lights
     annual_platform_costs = deal.n_lights * params.platform_fee_per_light_yr
 
-    # Sanity check: fee must not exceed customer's total baseline spend
+    # Sanity checks
     if annual_service_fee_y1 > deal.baseline_total_annual_cost:
-        annual_service_fee_y1 = deal.baseline_total_annual_cost
         warnings.append(
-            "Service fee exceeded customer baseline — capped at baseline total cost. "
-            "Reduce HPWinner savings share or re-check savings assumptions."
+            f"Service fee ({annual_service_fee_y1:,.0f}) exceeds customer baseline "
+            f"({deal.baseline_total_annual_cost:,.0f}) — customer has no incentive to sign."
         )
+    if savings.total > 0 and annual_service_fee_y1 > savings.total:
+        warnings.append(
+            f"Service fee ({annual_service_fee_y1:,.0f}) exceeds total modelled savings "
+            f"({savings.total:,.0f}) — HPWinner would be charging more than the deal creates."
+        )
+
+    # Implied savings share — informational output for the team
+    implied_share = (
+        (annual_service_fee_y1 / savings.total * 100.0) if savings.total > 0 else None
+    )
 
     # 4. Cashflows and financial metrics
     rows = _compute_cashflows(capex.total, annual_service_fee_y1, annual_platform_costs, params)
@@ -414,6 +428,7 @@ def run_model(
         annual_savings=savings,
         annual_service_fee_y1=annual_service_fee_y1,
         annual_platform_costs=annual_platform_costs,
+        hpwinner_implied_savings_share_pct=implied_share,
         yearly_cashflows=rows,
         customer_net_saving_y1=customer_net_saving_y1,
         customer_net_saving_total=customer_net_saving_total,
