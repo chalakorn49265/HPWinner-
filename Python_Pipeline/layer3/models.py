@@ -38,6 +38,25 @@ class DealInputs(BaseModel):
     annual_om_cost: float                  # B2
     annual_capex_budget: Optional[float] = None  # B3 — equipment / replacement budget
 
+    # Deal-level negotiated CAPEX (one-time, all-in incl. trenching + contingency).
+    # Used by the 能源托管 dashboard; when present the engine treats it as the
+    # authoritative project investment and ignores per-light cost sliders and
+    # trenching/contingency calculations.
+    project_investment_cny: Optional[float] = None  # B6
+
+    # Multi-year history for trend analysis (能源托管 dashboard contrast view)
+    annual_electricity_y_minus_1: Optional[float] = None  # B1a
+    annual_electricity_y_minus_2: Optional[float] = None  # B1b
+    annual_om_y_minus_1: Optional[float] = None           # B2a
+    annual_om_y_minus_2: Optional[float] = None           # B2b
+
+    # Scope detail
+    pole_count: Optional[int] = None                      # A5b — distinct from fixture count (A5)
+
+    # Customer expectations & contract economics (informational)
+    expected_annual_savings: Optional[float] = None       # G6
+    contract_total_value: Optional[float] = None          # H5
+
     # Operating profile
     existing_wattage_W: float              # C1
     proposed_wattage_W: float              # C2

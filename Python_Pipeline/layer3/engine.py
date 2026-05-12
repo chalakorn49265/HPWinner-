@@ -58,6 +58,21 @@ def _compute_capex(
     params: ScenarioParams,
     product,  # ProductConfig
 ) -> CapexBreakdown:
+    # Deal-level negotiated CAPEX (B6) wins when present — it's an all-in
+    # number that already includes trenching and contingency. Split for
+    # display only, by the product's natural hardware:installation ratio.
+    if deal.project_investment_cny and deal.project_investment_cny > 0:
+        total = deal.project_investment_cny
+        hw = product.hardware_cost_per_light_cny
+        inst = product.installation_cost_per_light_cny
+        hw_ratio = hw / (hw + inst) if (hw + inst) > 0 else 0.5
+        return CapexBreakdown(
+            hardware=total * hw_ratio,
+            installation=total * (1.0 - hw_ratio),
+            trenching=0.0,
+            contingency=0.0,
+        )
+
     hardware = deal.n_lights * params.hardware_cost_per_light
     installation = deal.n_lights * params.installation_cost_per_light
 

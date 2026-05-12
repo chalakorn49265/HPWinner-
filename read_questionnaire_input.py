@@ -31,7 +31,7 @@ from typing import Any
 from openpyxl import load_workbook
 
 
-_QID_RE = re.compile(r"^[A-Z]+\d+$")
+_QID_RE = re.compile(r"^[A-Z]+\d+[a-z]?$")
 
 
 def _json_safe(value: Any) -> Any:

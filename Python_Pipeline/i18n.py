@@ -155,6 +155,118 @@ _STRINGS: dict[str, dict[str, Any]] = {
         # ---- Spinners ----
         "spinner_model": "Running model…",
         "spinner_mc":    "Running Monte Carlo simulations…",
+
+        # =============================================================
+        # 能源托管 (Energy Management) Comparison Dashboard
+        # =============================================================
+        "em_page_title":     "Energy Management Comparison",
+        "em_sidebar_title":  "💧 能源托管 Compare",
+        "em_sidebar_caption":"Client Savings vs Baseline",
+
+        # Sidebar
+        "em_capex_header":      "💵 Project Investment (CAPEX)",
+        "em_capex_label":       "Total project investment ({currency})",
+        "em_capex_from_b6":     "From questionnaire (B6)",
+        "em_capex_from_spec":   "Estimated from product spec",
+        "em_capex_help":        "All-in CAPEX including hardware, installation, "
+                                "trenching, and contingency. Pre-filled from B6 "
+                                "if present; editable for what-if scenarios.",
+        "em_emission_header":   "🌍 Carbon Accounting",
+        "em_emission_label":    "Grid emission factor (kgCO₂/kWh)",
+        "em_emission_help":     "China national grid average ≈ 0.581 kgCO₂/kWh (2023).",
+        "em_fee_header":        "💰 Management Fee Rate",
+        "em_fee_label":         "托管费 share of gross savings (%)",
+        "em_fee_help":          "Fraction of energy savings paid to HPWinner. "
+                                "Client keeps the remainder.",
+
+        # Hero strip
+        "em_hero_title":     "Energy Savings Analysis — {deal_id}",
+        "em_hero_kwh_saved": "Annual kWh saved",
+        "em_hero_gross":     "Annual gross savings",
+        "em_hero_rate":      "Savings rate",
+        "em_hero_net_total": "Client net savings ({yrs}yr total)",
+        "em_hero_co2":       "Annual CO₂ reduction",
+
+        # Tabs
+        "em_tab_compare":  "📊 Cost Comparison",
+        "em_tab_detail":   "💧 Savings Detail",
+        "em_tab_multi":    "📅 Multi-Year",
+        "em_tab_tech":     "🔧 Technical Specs",
+
+        # Cost comparison tab
+        "em_compare_title":   "Annual Cost: Before vs After",
+        "em_compare_before":  "Before (current)",
+        "em_compare_after":   "After (HPWinner solution)",
+        "em_compare_saving":  "Annual saving",
+        "em_cat_elec":        "Electricity",
+        "em_cat_om":          "O&M (labor + repairs)",
+        "em_cat_capex":       "Equipment / replacement budget",
+        "em_cat_total":       "Total",
+
+        # Savings detail tab
+        "em_detail_wf_title":  "Annual Savings by Mechanism",
+        "em_energy_table_title":"Energy Consumption Comparison",
+        "em_energy_metric":    "Metric",
+        "em_energy_before":    "Before",
+        "em_energy_after":     "After",
+        "em_energy_saved":     "Saved",
+        "em_row_fixture_w":    "Fixture wattage (W)",
+        "em_row_fleet_kw":     "Total fleet load (kW)",
+        "em_row_annual_kwh":   "Annual energy (kWh)",
+        "em_row_annual_cost":  "Annual electricity cost ({currency})",
+        "em_row_co2":          "Annual CO₂ (tonnes)",
+
+        # Multi-year tab
+        "em_multi_title":      "Cumulative Net Savings over Contract",
+        "em_multi_x":          "Year",
+        "em_multi_y":          "Cumulative ({currency})",
+        "em_multi_gross":      "Gross savings",
+        "em_multi_fee":        "托管费 (paid to HPWinner)",
+        "em_multi_net":        "Net to client",
+        "em_multi_summary":    "After {yrs} years: client saves **{net}** net; "
+                               "HPWinner earns **{fee}** in fees.",
+
+        # Technical specs tab
+        "em_tech_specs_title": "Product Specifications",
+        "em_spec_lifetime":    "Expected lifetime (years)",
+        "em_spec_warranty":    "Warranty (years)",
+        "em_spec_failure":     "Annual failure rate (%)",
+        "em_spec_dimming":     "Dimming capable",
+        "em_spec_solar":       "Solar capable",
+        "em_spec_yes":         "Yes",
+        "em_spec_no":          "No",
+
+        # Capex source caption
+        "em_capex_source":     "Source: {source}",
+
+        # 3-Year history trend (Cost Comparison tab)
+        "em_history_title":    "3-Year Historical Cost Trend",
+        "em_history_help":     "Customer's actual annual costs over the past 3 years "
+                               "(from B1/B1a/B1b and B2/B2a/B2b). Validates the baseline "
+                               "trajectory before contrasting with HPWinner solution.",
+        "em_history_y_minus_2":"Y-2 (oldest)",
+        "em_history_y_minus_1":"Y-1",
+        "em_history_y_0":      "Y0 (most recent)",
+        "em_history_after":    "After HPWinner",
+        "em_history_no_data":  "No multi-year history in questionnaire (B1a/B1b/B2a/B2b empty).",
+        "em_history_trend_up": "⚠️ Costs trending UP — strong case for HPWinner intervention.",
+        "em_history_trend_dn": "Costs trending DOWN — verify savings projection is realistic.",
+        "em_history_trend_flat":"Costs roughly flat.",
+
+        # Client cashflow + payback chart (Multi-Year tab)
+        "em_payback_title":         "Client Cumulative Cashflow",
+        "em_payback_axis":          "Year",
+        "em_payback_y":             "Cashflow ({currency})",
+        "em_payback_outflow":       "CAPEX outflow",
+        "em_payback_annual_net":    "Annual net savings",
+        "em_payback_cum":           "Cumulative",
+        "em_payback_marker":        "Payback {yrs:.1f} yr",
+        "em_payback_summary_ok":    "Investment **{capex}** pays back in **{payback:.1f} years**. "
+                                    "Profit by end of {yrs}-year contract: **{profit}**.",
+        "em_payback_summary_long":  "Investment **{capex}** at current net of **{net}/yr** does not "
+                                    "pay back within the {yrs}-year contract. Shortfall at term end: **{shortfall}**.",
+        "em_payback_help":          "Year 0 = CAPEX outlay (client invests). Year 1+ = annual savings net "
+                                    "of 托管费. Curve crosses zero when cumulative savings have repaid CAPEX.",
     },
 
     "zh": {
@@ -301,6 +413,115 @@ _STRINGS: dict[str, dict[str, Any]] = {
         # ---- Spinners ----
         "spinner_model": "正在运行模型…",
         "spinner_mc":    "正在运行蒙特卡洛模拟…",
+
+        # =============================================================
+        # 能源托管 对比分析仪表板
+        # =============================================================
+        "em_page_title":     "能源托管 节能对比分析",
+        "em_sidebar_title":  "💧 能源托管 对比",
+        "em_sidebar_caption":"客户节省 vs 现状基线",
+
+        # Sidebar
+        "em_capex_header":      "💵 项目投资额（CAPEX）",
+        "em_capex_label":       "项目总投资额（{currency}）",
+        "em_capex_from_b6":     "来自问卷 B6",
+        "em_capex_from_spec":   "根据产品规格估算",
+        "em_capex_help":        "一次性总投资（含硬件、安装、管沟、备用金）。"
+                                "若问卷 B6 有值则自动填入；可手动调整用于情景测算。",
+        "em_emission_header":   "🌍 碳核算",
+        "em_emission_label":    "电网排放因子（kgCO₂/kWh）",
+        "em_emission_help":     "中国全国电网平均值 ≈ 0.581 kgCO₂/kWh（2023年）。",
+        "em_fee_header":        "💰 托管费率",
+        "em_fee_label":         "托管费占总节能收益比例（%）",
+        "em_fee_help":          "支付给惠普纳的节能收益分成，剩余归客户所得。",
+
+        # Hero strip
+        "em_hero_title":     "节能分析 — {deal_id}",
+        "em_hero_kwh_saved": "年节电量",
+        "em_hero_gross":     "年总节省",
+        "em_hero_rate":      "节省率",
+        "em_hero_net_total": "客户合同期净节省（{yrs}年）",
+        "em_hero_co2":       "年碳减排",
+
+        # Tabs
+        "em_tab_compare":  "📊 成本对比",
+        "em_tab_detail":   "💧 节能详情",
+        "em_tab_multi":    "📅 多年展望",
+        "em_tab_tech":     "🔧 技术参数",
+
+        # Cost comparison tab
+        "em_compare_title":   "年度成本对比：改造前 vs 改造后",
+        "em_compare_before":  "改造前（现状）",
+        "em_compare_after":   "改造后（惠普纳方案）",
+        "em_compare_saving":  "年节省额",
+        "em_cat_elec":        "电费",
+        "em_cat_om":          "运维（人工 + 维修）",
+        "em_cat_capex":       "设备更换预算",
+        "em_cat_total":       "合计",
+
+        # Savings detail tab
+        "em_detail_wf_title":  "按节能机制分解的年节省",
+        "em_energy_table_title":"能耗对比",
+        "em_energy_metric":    "指标",
+        "em_energy_before":    "改造前",
+        "em_energy_after":     "改造后",
+        "em_energy_saved":     "节省",
+        "em_row_fixture_w":    "单灯功率（W）",
+        "em_row_fleet_kw":     "全部装机总功率（kW）",
+        "em_row_annual_kwh":   "年用电量（kWh）",
+        "em_row_annual_cost":  "年电费支出（{currency}）",
+        "em_row_co2":          "年碳排放（吨）",
+
+        # Multi-year tab
+        "em_multi_title":      "合同期累计净节省",
+        "em_multi_x":          "年份",
+        "em_multi_y":          "累计金额（{currency}）",
+        "em_multi_gross":      "总节省",
+        "em_multi_fee":        "托管费（支付给惠普纳）",
+        "em_multi_net":        "客户净得",
+        "em_multi_summary":    "{yrs} 年后：客户净节省 **{net}**；"
+                               "惠普纳累计收取托管费 **{fee}**。",
+
+        # Technical specs tab
+        "em_tech_specs_title": "产品规格",
+        "em_spec_lifetime":    "预期寿命（年）",
+        "em_spec_warranty":    "质保期（年）",
+        "em_spec_failure":     "年故障率（%）",
+        "em_spec_dimming":     "支持调光",
+        "em_spec_solar":       "支持太阳能",
+        "em_spec_yes":         "是",
+        "em_spec_no":          "否",
+
+        # Capex source caption
+        "em_capex_source":     "数据来源：{source}",
+
+        # 3-Year history trend (Cost Comparison tab)
+        "em_history_title":    "近 3 年成本趋势",
+        "em_history_help":     "客户过去 3 年实际年度成本（来自问卷 B1/B1a/B1b 和 B2/B2a/B2b）。"
+                               "用于校验基线轨迹，再与惠普纳方案对比。",
+        "em_history_y_minus_2":"Y-2（最久）",
+        "em_history_y_minus_1":"Y-1",
+        "em_history_y_0":      "Y0（最近年度）",
+        "em_history_after":    "惠普纳方案后",
+        "em_history_no_data":  "问卷中无多年历史数据（B1a/B1b/B2a/B2b 未填）。",
+        "em_history_trend_up": "⚠️ 成本上涨趋势 — 强化了引入惠普纳方案的紧迫性。",
+        "em_history_trend_dn": "成本下降趋势 — 需复核节能预测的合理性。",
+        "em_history_trend_flat":"成本基本持平。",
+
+        # Client cashflow + payback chart (Multi-Year tab)
+        "em_payback_title":         "客户累计现金流",
+        "em_payback_axis":          "年份",
+        "em_payback_y":             "现金流（{currency}）",
+        "em_payback_outflow":       "投资支出（CAPEX）",
+        "em_payback_annual_net":    "年净节省",
+        "em_payback_cum":           "累计",
+        "em_payback_marker":        "回本 {yrs:.1f} 年",
+        "em_payback_summary_ok":    "投资 **{capex}** 将在 **{payback:.1f} 年** 内回本。"
+                                    "合同期 {yrs} 年末客户净获利：**{profit}**。",
+        "em_payback_summary_long":  "投资 **{capex}** 按当前年净 **{net}/年** 在合同期 {yrs} 年内"
+                                    "无法完全回本，期末仍未覆盖：**{shortfall}**。",
+        "em_payback_help":          "第 0 年为客户的投资支出。第 1 年起为扣除托管费后的年净节省。"
+                                    "曲线穿越 0 线时即为投资回收点。",
     },
 }
 
