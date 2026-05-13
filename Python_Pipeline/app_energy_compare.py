@@ -231,9 +231,7 @@ def _client_display_om_elec_savings(
 
     el_sh = _CLIENT_ELEC_SHARE_OF_ELEC_OM
     om_sh = _CLIENT_OM_SHARE_OF_ELEC_OM
-    t = min(_CLIENT_ELEC_OM_SAVINGS_CAP_CNY, raw_total)
-    if raw_total >= 950_000:
-        t = max(950_000, min(t, _CLIENT_ELEC_OM_SAVINGS_CAP_CNY))
+    t = raw_total
     cap_b1 = (b1 * 0.98) / el_sh if el_sh > 0 and b1 > 0 else float("inf")
     cap_b2 = (b2 * 0.98) / om_sh if om_sh > 0 and b2 > 0 else float("inf")
     t = min(t, cap_b1, cap_b2)
@@ -470,7 +468,7 @@ def _stakeholder_map_html(
     savings_rate: float,
     s_total_gross: float,
 ) -> str:
-    """Self-contained HTML/CSS stakeholder flow; labels via t() (active i18n lang)."""
+    """McKinsey/Deloitte-style stakeholder value flow. No spreadsheet cell references."""
     esc = html.escape
     poles = deal.pole_count
     poles_s = f"{poles:,}" if poles is not None else "—"
@@ -479,7 +477,10 @@ def _stakeholder_map_html(
     h5_s = _fmt_cny_plain(h5) + f" {currency}" if h5 and h5 > 0 else "—"
     g6_s = _fmt_cny_plain(g6) + f" {currency}/yr" if g6 and g6 > 0 else "—"
     audit = _audit_snapshot_for_stakeholder_map(deal, currency)
-    b1b2 = deal.annual_electricity_cost + deal.annual_om_cost
+    b1 = deal.annual_electricity_cost
+    b2 = deal.annual_om_cost
+    b3 = deal.annual_capex_budget if deal.annual_capex_budget is not None else 0.0
+    b1b2 = b1 + b2
     prod_name = esc(getattr(product, "display_name", "") or "—")
 
     def T(key: str, **kwargs: Any) -> str:
@@ -487,164 +488,275 @@ def _stakeholder_map_html(
 
     nl = f"{deal.n_lights:,}"
 
-    parts_s: List[str] = [
-        f'{T("em_cat_elec")} −{_fmt_cny_plain(elec_saving)}',
-        f'{T("em_cat_om")} −{_fmt_cny_plain(om_saving)}',
-    ]
-    b3 = deal.annual_capex_budget if deal.annual_capex_budget is not None else 0.0
+    # Pre-format all numbers
+    save_fmt   = _fmt_cny_plain(client_save_y1)
+    elec_sv    = _fmt_cny_plain(elec_saving)
+    om_sv      = _fmt_cny_plain(om_saving)
+    cap_sv     = _fmt_cny_plain(capex_saving)
+    capex_fmt  = _fmt_cny_plain(capex_total)
+    b1b2_fmt   = _fmt_cny_plain(b1b2)
+    b1_fmt     = _fmt_cny_plain(b1)
+    b2_fmt     = _fmt_cny_plain(b2)
+    gross_fmt  = _fmt_cny_plain(s_total_gross)
+    kwh_mwh    = kwh_saved / 1000.0
+    sr_pct     = savings_rate * 100.0
+    deal_id    = esc(str(deal.deal_id))
+
+    # Optional rows
+    capex_row = ""
     if b3 > 1e-9 or capex_saving > 1e-6:
-        parts_s.append(f'{T("em_cat_capex")} −{_fmt_cny_plain(capex_saving)}')
-    savings_break = (
-        " · ".join(parts_s)
-        + f" · {T('em_cat_total')} {_fmt_cny_plain(client_save_y1)} {esc(currency)}/yr"
-    )
-    b3_note_html = ""
-    if b3 <= 1e-9 and capex_saving <= 1e-6:
-        b3_note_html = (
-            f'<br/><span style="font-size:0.65rem;color:var(--muted)">{T("em_stake_pool_b3_note")}</span>'
+        capex_row = (
+            f'<div class="sr"><span class="sl">{esc(t("em_stake_lbl_capex_avoid"))}</span>'
+            f'<span class="sv g">−{esc(cap_sv)}</span></div>'
+        )
+    engine_note = ""
+    if abs(s_total_gross - client_save_y1) > 50_000:
+        engine_note = (
+            f'<div class="eng">'
+            f'{esc(t("em_stake_lbl_crosscheck", gross=gross_fmt, currency=currency))}'
+            f'</div>'
         )
 
     return f"""<!DOCTYPE html><html><head><meta charset="utf-8"/><style>
-:root {{
-  --teal: #0f766e;
-  --teal2: #14b8a6;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --card: #ffffff;
-  --border: #e2e8f0;
-  --pool: #f0fdfa;
-}}
-.stmap-wrap {{
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color: var(--ink);
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 8px 4px 16px;
-}}
-.stmap-wrap h2 {{ margin: 0 0 6px; font-size: 1.15rem; color: var(--teal); }}
-.stmap-wrap .sub {{ margin: 0 0 14px; font-size: 0.85rem; color: var(--muted); }}
-.stmap-flow {{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 8px;
-}}
-.stmap-col {{
-  flex: 1 1 160px;
-  min-width: 140px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}}
-.stmap-col h3 {{
-  margin: 0 0 4px;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  font-weight: 600;
-}}
-.stmap-card {{
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 10px;
-  box-shadow: 0 1px 2px rgba(15,23,42,0.06);
-}}
-.stmap-card strong {{ display: block; font-size: 0.82rem; color: var(--teal); margin-bottom: 4px; }}
-.stmap-card span {{ font-size: 0.72rem; color: var(--muted); line-height: 1.35; }}
-.stmap-arrow {{
-  flex: 0 0 36px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  color: var(--teal2);
-  text-align: center;
-  font-weight: 700;
-}}
-.stmap-arrow small {{
-  font-size: 0.58rem;
-  font-weight: 500;
-  color: var(--muted);
-  max-width: 56px;
-  line-height: 1.2;
-}}
-.stmap-pool {{
-  background: var(--pool);
-  border: 1px solid #99f6e4;
-}}
-.stmap-pool .metric {{
-  font-size: 0.74rem;
-  margin: 4px 0;
-  border-bottom: 1px dashed #ccfbf1;
-  padding-bottom: 4px;
-}}
-.stmap-pool .metric:last-child {{ border-bottom: none; }}
-.stmap-pool .metric strong {{ color: var(--teal); }}
-.stmap-foot {{
-  margin-top: 14px;
-  font-size: 0.68rem;
-  color: var(--muted);
-  line-height: 1.45;
-  border-top: 1px solid var(--border);
-  padding-top: 10px;
-}}
-</style></head><body><div class="stmap-wrap">
-  <h2>{T("em_stake_page_title")}</h2>
-  <p class="sub">{esc(t("em_stake_project_line", deal_id=str(deal.deal_id)))}</p>
-  <div class="stmap-flow">
-    <div class="stmap-col">
-      <h3>{T("em_stake_col_gov")}</h3>
-      <div class="stmap-card"><strong>{T("em_stake_node_district")}</strong><span>{T("em_stake_node_district_sub")}</span></div>
-      <div class="stmap-card"><strong>{T("em_stake_node_urban_mgmt")}</strong><span>{T("em_stake_node_urban_mgmt_sub")}</span></div>
-      <div class="stmap-card"><strong>{T("em_stake_node_dev_group")}</strong><span>{T("em_stake_node_dev_group_sub")}</span></div>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f172a}}
+.pg{{max-width:1420px;margin:0 auto;padding:22px 18px 28px}}
+
+/* ── Header bar ── */
+.hdr{{display:flex;align-items:center;justify-content:space-between;background:#0f172a;border-radius:10px;padding:16px 22px;margin-bottom:18px}}
+.hdr-title{{color:#fff;font-size:1.2rem;font-weight:800;letter-spacing:-0.02em}}
+.hdr-sub{{color:#94a3b8;font-size:0.72rem;margin-top:3px}}
+.hdr-badge{{background:#0d9488;color:#fff;font-size:0.6rem;font-weight:800;padding:4px 12px;border-radius:20px;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap}}
+
+/* ── KPI strip ── */
+.kpis{{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}}
+.kpi{{border-radius:8px;padding:14px 15px}}
+.kpi-a{{background:#0d9488;color:#fff}}
+.kpi-b{{background:#0f172a;color:#fff}}
+.kpi-c{{background:#fff;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06)}}
+.kpi .ql{{font-size:0.59rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:7px}}
+.kpi-a .ql,.kpi-b .ql{{color:#99f6e4}}
+.kpi-c .ql{{color:#64748b}}
+.kpi .qv{{font-size:1.5rem;font-weight:800;line-height:1;letter-spacing:-0.02em}}
+.kpi-a .qv,.kpi-b .qv{{color:#fff}}
+.kpi-c .qv{{color:#0f172a}}
+.kpi .qu{{font-size:0.62rem;margin-top:5px}}
+.kpi-a .qu,.kpi-b .qu{{color:#94a3b8}}
+.kpi-c .qu{{color:#64748b}}
+
+/* ── Flow grid ── */
+.flow{{display:flex;align-items:flex-start;gap:0}}
+.col{{flex:1 1 0;min-width:0;padding:0 7px}}
+.col:first-child{{padding-left:0}}
+.col:last-child{{padding-right:0}}
+.col-wide{{flex:1.65 1 0}}
+.col-hdr{{font-size:0.57rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;padding-bottom:7px;border-bottom:2px solid #cbd5e1;margin-bottom:9px}}
+
+/* ── Arrow connectors ── */
+.arrow{{flex:0 0 24px;display:flex;flex-direction:column;align-items:center;padding-top:48px;color:#0d9488}}
+.arrow svg{{width:16px;height:16px;flex-shrink:0}}
+.arrow-lbl{{font-size:0.5rem;font-weight:700;text-align:center;color:#94a3b8;max-width:40px;margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:0.05em}}
+
+/* ── Entity cards ── */
+.card{{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:11px 12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}}
+.card-t{{font-size:0.77rem;font-weight:700;color:#0f172a;margin-bottom:3px}}
+.card-b{{font-size:0.66rem;color:#475569;line-height:1.5}}
+.tag{{display:inline-block;background:#f0fdfa;color:#0d9488;font-size:0.58rem;font-weight:700;padding:2px 7px;border-radius:3px;border:1px solid #99f6e4;margin-top:4px}}
+
+/* ── Data rows inside cards ── */
+.sr{{display:flex;justify-content:space-between;align-items:baseline;padding:2.5px 0}}
+.sl{{font-size:0.63rem;color:#64748b}}
+.sv{{font-size:0.71rem;font-weight:600;color:#0f172a}}
+.sv.g{{color:#0d9488}}
+
+/* ── Value pool (baseline column) ── */
+.pool{{background:#f0fdfa;border:1px solid #99f6e4;border-left:4px solid #0d9488;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(13,148,136,0.08)}}
+.psec{{padding:10px 14px;border-bottom:1px solid #ccfbf1}}
+.psec:last-child{{border-bottom:none}}
+.psec-t{{font-size:0.57rem;font-weight:800;text-transform:uppercase;letter-spacing:0.09em;color:#0d9488;margin-bottom:5px}}
+.pval{{font-size:0.88rem;font-weight:700;color:#0f172a;line-height:1.3}}
+.psub{{font-size:0.62rem;color:#64748b;margin-top:2px;line-height:1.4}}
+.total-row{{display:flex;justify-content:space-between;align-items:baseline;margin-top:7px;padding-top:7px;border-top:1px solid #99f6e4}}
+.total-lbl{{font-size:0.7rem;font-weight:700;color:#0f172a}}
+.total-val{{font-size:1.0rem;font-weight:800;color:#0d9488}}
+.eng{{font-size:0.59rem;color:#94a3b8;margin-top:5px;font-style:italic}}
+
+/* ── Outcome cards ── */
+.oc{{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;margin-bottom:7px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}}
+.oc-l{{font-size:0.57rem;font-weight:800;text-transform:uppercase;letter-spacing:0.09em;color:#94a3b8;margin-bottom:4px}}
+.oc-v{{font-size:1.05rem;font-weight:800;color:#0f172a;line-height:1.2}}
+.oc-v.t{{color:#0d9488}}
+
+/* ── Footer ── */
+.foot{{margin-top:16px;font-size:0.6rem;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:10px;line-height:1.6}}
+</style></head><body><div class="pg">
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title">{T("em_stake_framework_title")}</div>
+    <div class="hdr-sub">{deal_id} &nbsp;·&nbsp; {prod_name} &nbsp;·&nbsp; {T("em_stake_programme_sub", contract_yrs=contract_yrs)}</div>
+  </div>
+  <div class="hdr-badge">{T("em_stake_confidential")}</div>
+</div>
+
+<div class="kpis">
+  <div class="kpi kpi-a">
+    <div class="ql">{T("em_stake_kpi_savings_lbl")}</div>
+    <div class="qv">{esc(save_fmt)}</div>
+    <div class="qu">{T("em_stake_kpi_savings_unit", currency=currency)}</div>
+  </div>
+  <div class="kpi kpi-b">
+    <div class="ql">{T("em_hero_rate")}</div>
+    <div class="qv">{sr_pct:.1f}%</div>
+    <div class="qu">{T("em_stake_kpi_rate_unit")}</div>
+  </div>
+  <div class="kpi kpi-b">
+    <div class="ql">{T("em_stake_kpi_energy_lbl")}</div>
+    <div class="qv">{kwh_mwh:,.0f}</div>
+    <div class="qu">{T("em_stake_kpi_energy_unit")}</div>
+  </div>
+  <div class="kpi kpi-b">
+    <div class="ql">{T("em_stake_kpi_carbon_lbl")}</div>
+    <div class="qv">{co2_t_yr:,.0f}</div>
+    <div class="qu">{T("em_stake_kpi_carbon_unit")}</div>
+  </div>
+  <div class="kpi kpi-c">
+    <div class="ql">{T("em_stake_kpi_invest_lbl")}</div>
+    <div class="qv">{esc(capex_fmt)}</div>
+    <div class="qu">{T("em_stake_kpi_invest_unit", currency=currency)}</div>
+  </div>
+</div>
+
+<div class="flow">
+
+  <div class="col">
+    <div class="col-hdr">{T("em_stake_col_gov")}</div>
+    <div class="card">
+      <div class="card-t">{T("em_stake_node_district")}</div>
+      <div class="card-b">{T("em_stake_node_district_sub")}</div>
     </div>
-    <div class="stmap-arrow">→<small>{T("em_stake_edge_to_middle")}</small></div>
-    <div class="stmap-col">
-      <h3>{T("em_stake_col_market")}</h3>
-      <div class="stmap-card"><strong>{T("em_stake_node_tender")}</strong><span>{T("em_stake_node_tender_sub")}</span></div>
-      <div class="stmap-card"><strong>{T("em_stake_node_hpwinner")}</strong><span>{T("em_stake_node_hpwinner_sub")}<br/>{prod_name}</span></div>
+    <div class="card">
+      <div class="card-t">{T("em_stake_node_urban_mgmt")}</div>
+      <div class="card-b">{T("em_stake_node_urban_mgmt_sub")}</div>
     </div>
-    <div class="stmap-arrow">→<small>{T("em_stake_edge_data_in")}</small></div>
-    <div class="stmap-col">
-      <h3>{T("em_stake_col_middle")}</h3>
-      <div class="stmap-card"><strong>{T("em_stake_node_hosting")}</strong><span>
-        A5 {nl} · A5b {esc(poles_s)} · {T("em_stake_out_contract")}: {contract_yrs} yr<br/>
-        CAPEX {_fmt_cny_plain(capex_total)} {esc(currency)}
-      </span></div>
-      <div class="stmap-card"><strong>{T("em_stake_node_ai_platform")}</strong><span>{T("em_stake_edge_feedback")}</span></div>
-    </div>
-    <div class="stmap-arrow">→<small>{T("em_stake_edge_feedback")}</small></div>
-    <div class="stmap-col" style="flex:1.35 1 200px;">
-      <h3>{T("em_stake_col_pool")}</h3>
-      <div class="stmap-card stmap-pool">
-        <div class="metric"><strong>{T("em_stake_pool_audit")}</strong><br/>
-          {esc(audit["audit_elec_last"])} · {esc(audit["audit_om_last"])}</div>
-        <div class="metric"><strong>{T("em_stake_pool_audit_range")}</strong><br/>{esc(audit["audit_elec_rng"])}</div>
-        <div class="metric"><strong>{T("em_stake_pool_audit_om_range")}</strong><br/>{esc(audit["audit_om_rng"])}</div>
-        <div class="metric"><strong>{T("em_stake_pool_project")}</strong><br/>
-          B1 {_fmt_cny_plain(deal.annual_electricity_cost)} + B2 {_fmt_cny_plain(deal.annual_om_cost)} = {_fmt_cny_plain(b1b2)} {esc(currency)}/yr</div>
-        <div class="metric"><strong>{T("em_stake_pool_savings")}</strong><br/>
-          {savings_break}{b3_note_html}<br/>
-          <span style="font-size:0.65rem;color:var(--muted)">{T("em_hero_gross")} {T("em_stake_engine_suffix")}: {_fmt_cny_plain(s_total_gross)} {esc(currency)}/yr</span></div>
-        <div class="metric"><strong>{T("em_stake_pool_invest")}</strong><br/>{_fmt_cny_plain(capex_total)} {esc(currency)}</div>
-        <div class="metric"><strong>{T("em_stake_pool_contract_val")}</strong><br/>{esc(h5_s)}</div>
-        <div class="metric"><strong>{T("em_stake_pool_expected_save")}</strong><br/>{esc(g6_s)}</div>
-      </div>
-    </div>
-    <div class="stmap-arrow">→<small>{T("em_stake_edge_to_out")}</small></div>
-    <div class="stmap-col">
-      <h3>{T("em_stake_col_out")}</h3>
-      <div class="stmap-card"><strong>{T("em_stake_out_contract")}</strong><span>{contract_yrs} yr</span></div>
-      <div class="stmap-card"><strong>{T("em_stake_out_energy")}</strong><span>{kwh_saved:,.0f} kWh/yr</span></div>
-      <div class="stmap-card"><strong>{T("em_stake_out_carbon")}</strong><span>{co2_t_yr:,.1f} tCO₂e/yr</span></div>
-      <div class="stmap-card"><strong>{T("em_stake_out_savings_rate")}</strong><span>{savings_rate*100:.1f}%</span></div>
-      <div class="stmap-card"><strong>{T("em_stake_out_fee")}</strong><span>{fee_rate_pct:.0f}%</span></div>
+    <div class="card">
+      <div class="card-t">{T("em_stake_node_dev_group")}</div>
+      <div class="card-b">{T("em_stake_node_dev_group_sub")}</div>
     </div>
   </div>
-  <div class="stmap-foot">{T("em_stake_footnote")}</div>
+
+  <div class="arrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    <div class="arrow-lbl">{T("em_stake_edge_to_middle")}</div>
+  </div>
+
+  <div class="col">
+    <div class="col-hdr">{T("em_stake_col_market")}</div>
+    <div class="card">
+      <div class="card-t">{T("em_stake_node_tender")}</div>
+      <div class="card-b">{T("em_stake_node_tender_sub")}</div>
+    </div>
+    <div class="card">
+      <div class="card-t">{T("em_stake_node_hpwinner")}</div>
+      <div class="card-b">{T("em_stake_node_hpwinner_sub")}<br/><span class="tag">{prod_name}</span></div>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    <div class="arrow-lbl">{T("em_stake_arrow_install")}</div>
+  </div>
+
+  <div class="col">
+    <div class="col-hdr">{T("em_stake_col_middle")}</div>
+    <div class="card">
+      <div class="card-t">{T("em_stake_node_hosting")}</div>
+      <div class="card-b">
+        <div class="sr"><span class="sl">{T("em_stake_lbl_lights")}</span><span class="sv">{nl}</span></div>
+        <div class="sr"><span class="sl">{T("em_stake_lbl_poles")}</span><span class="sv">{esc(poles_s)}</span></div>
+        <div class="sr"><span class="sl">{T("em_stake_out_contract")}</span><span class="sv">{contract_yrs} yr</span></div>
+        <div class="sr"><span class="sl">{T("tbl_total_capex")}</span><span class="sv">{esc(capex_fmt)} {esc(currency)}</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t">{T("em_stake_node_ai_platform")}</div>
+      <div class="card-b">{T("em_stake_edge_feedback")}</div>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    <div class="arrow-lbl">{T("em_stake_edge_data_in")}</div>
+  </div>
+
+  <div class="col col-wide">
+    <div class="col-hdr">{T("em_stake_col_pool")}</div>
+    <div class="pool">
+
+      <div class="psec">
+        <div class="psec-t">{T("em_stake_pool_audit")}</div>
+        <div class="pval">{esc(audit["audit_elec_last"])} &nbsp;·&nbsp; {esc(audit["audit_om_last"])}</div>
+        <div class="psub">{T("em_stake_lbl_elec_om_sub")}</div>
+      </div>
+
+      <div class="psec">
+        <div class="psec-t">{T("em_stake_pool_audit_range")}</div>
+        <div class="pval">{esc(audit["audit_elec_rng"])}</div>
+      </div>
+
+      <div class="psec">
+        <div class="psec-t">{T("em_stake_pool_audit_om_range")}</div>
+        <div class="pval">{esc(audit["audit_om_rng"])}</div>
+      </div>
+
+      <div class="psec">
+        <div class="psec-t">{T("em_stake_lbl_baseline")}</div>
+        <div class="pval">{esc(b1b2_fmt)} {esc(currency)}/yr</div>
+        <div class="psub">{T("em_stake_lbl_bline_detail", b1=b1_fmt, b2=b2_fmt)}</div>
+      </div>
+
+      <div class="psec">
+        <div class="psec-t">{T("em_stake_pool_savings")}</div>
+        <div class="sr"><span class="sl">{T("em_stake_lbl_elec_reduc")}</span><span class="sv g">−{esc(elec_sv)}</span></div>
+        <div class="sr"><span class="sl">{T("em_stake_lbl_om_reduc")}</span><span class="sv g">−{esc(om_sv)}</span></div>
+        {capex_row}
+        <div class="total-row">
+          <span class="total-lbl">{T("em_stake_lbl_total_save")}</span>
+          <span class="total-val">{esc(save_fmt)} {esc(currency)}/yr</span>
+        </div>
+        {engine_note}
+      </div>
+
+      <div class="psec">
+        <div class="psec-t">{T("em_stake_lbl_cont_targets")}</div>
+        <div class="sr"><span class="sl">{T("em_stake_lbl_cont_total")}</span><span class="sv">{esc(h5_s)}</span></div>
+        <div class="sr"><span class="sl">{T("em_stake_lbl_tgt_savings")}</span><span class="sv">{esc(g6_s)}</span></div>
+        <div class="sr"><span class="sl">{T("em_stake_lbl_mgmt_fee")}</span><span class="sv">{T("em_stake_lbl_fee_pct", fee=fee_rate_pct)}</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="arrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    <div class="arrow-lbl">{T("em_stake_edge_to_out")}</div>
+  </div>
+
+  <div class="col">
+    <div class="col-hdr">{T("em_stake_col_out")}</div>
+    <div class="oc"><div class="oc-l">{T("em_stake_out_contract")}</div><div class="oc-v">{contract_yrs} yr</div></div>
+    <div class="oc"><div class="oc-l">{T("em_stake_out_energy")}</div><div class="oc-v t">{kwh_mwh:,.0f} MWh</div></div>
+    <div class="oc"><div class="oc-l">{T("em_stake_out_carbon")}</div><div class="oc-v t">{co2_t_yr:,.1f} tCO₂e</div></div>
+    <div class="oc"><div class="oc-l">{T("em_stake_out_savings_rate")}</div><div class="oc-v">{sr_pct:.1f}%</div></div>
+    <div class="oc"><div class="oc-l">{T("em_stake_out_fee")}</div><div class="oc-v">{fee_rate_pct:.0f}%</div></div>
+  </div>
+
+</div>
+
+<div class="foot">
+  {T("em_stake_footer_text", currency=currency)}
+</div>
+
 </div></body></html>"""
 
 
@@ -1033,7 +1145,7 @@ def main() -> None:
             savings_rate=savings_rate,
             s_total_gross=s.total,
         )
-        components.html(stake_html, height=1080, scrolling=True)
+        components.html(stake_html, height=1200, scrolling=True)
 
 
 if __name__ == "__main__":

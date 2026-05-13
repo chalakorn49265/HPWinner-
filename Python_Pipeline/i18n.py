@@ -239,6 +239,41 @@ _STRINGS: dict[str, dict[str, Any]] = {
                                       "adapt names to the local org chart. Numbers match the "
                                       "tabs above for this run.",
 
+        # Stakeholder map — consulting-style labels (no spreadsheet cell refs)
+        "em_stake_framework_title":  "Energy Management Value Framework",
+        "em_stake_programme_sub":    "{contract_yrs}-Year Energy Hosting Programme",
+        "em_stake_confidential":     "Confidential",
+        "em_stake_kpi_savings_lbl":  "Annual Savings",
+        "em_stake_kpi_savings_unit": "{currency} / year",
+        "em_stake_kpi_rate_unit":    "of total baseline cost",
+        "em_stake_kpi_energy_lbl":   "Energy Saved",
+        "em_stake_kpi_energy_unit":  "MWh / year",
+        "em_stake_kpi_carbon_lbl":   "Carbon Reduction",
+        "em_stake_kpi_carbon_unit":  "tCO₂e / year",
+        "em_stake_kpi_invest_lbl":   "Project Investment",
+        "em_stake_kpi_invest_unit":  "{currency} total CAPEX",
+        "em_stake_arrow_install":    "Install & commission",
+        "em_stake_lbl_lights":       "Street lights",
+        "em_stake_lbl_poles":        "Poles",
+        "em_stake_lbl_baseline":     "Project Baseline (Annual)",
+        "em_stake_lbl_elec_om_sub":  "Electricity · O&M",
+        "em_stake_lbl_bline_detail": "Electricity {b1} + O&M {b2}",
+        "em_stake_lbl_elec_reduc":   "Electricity reduction",
+        "em_stake_lbl_om_reduc":     "O&M reduction (labour & repairs)",
+        "em_stake_lbl_total_save":   "Total annual savings",
+        "em_stake_lbl_capex_avoid":  "Avoided capital replacement",
+        "em_stake_lbl_crosscheck":   "Cross-check — engine gross: {gross} {currency}/yr",
+        "em_stake_lbl_cont_targets": "Contract Value & Targets",
+        "em_stake_lbl_cont_total":   "Indicative contract total",
+        "em_stake_lbl_tgt_savings":  "Target annual savings",
+        "em_stake_lbl_mgmt_fee":     "Management fee",
+        "em_stake_lbl_fee_pct":      "{fee:.0f}% of gross savings",
+        "em_stake_footer_text":      "All monetary figures in {currency}. Savings modelled using "
+                                     "the HPWinner scenario engine; actual results are subject to "
+                                     "site conditions and operational performance. Audit history "
+                                     "sourced from client-submitted questionnaire data (prior three "
+                                     "fiscal years).",
+
         # Cost comparison tab
         "em_compare_title":   "Annual Cost: Before vs After",
         "em_compare_before":  "Before (current)",
@@ -544,6 +579,39 @@ _STRINGS: dict[str, dict[str, Any]] = {
         "em_stake_out_fee":          "托管费占毛节省比例",
         "em_stake_footnote":          "角色为能源托管路演示意，请按当地组织架构替换称谓。"
                                       "图中数字与本页上方各 Tab 当前运行结果一致。",
+
+        # Stakeholder map — 咨询风格文本（无电子表格单元格引用）
+        "em_stake_framework_title":  "能源托管价值框架",
+        "em_stake_programme_sub":    "{contract_yrs}年能源托管项目",
+        "em_stake_confidential":     "保密文件",
+        "em_stake_kpi_savings_lbl":  "年化节省",
+        "em_stake_kpi_savings_unit": "{currency} / 年",
+        "em_stake_kpi_rate_unit":    "占基线总成本",
+        "em_stake_kpi_energy_lbl":   "年节电量",
+        "em_stake_kpi_energy_unit":  "MWh / 年",
+        "em_stake_kpi_carbon_lbl":   "年碳减排",
+        "em_stake_kpi_carbon_unit":  "tCO₂e / 年",
+        "em_stake_kpi_invest_lbl":   "项目投资额",
+        "em_stake_kpi_invest_unit":  "{currency} 总资本支出",
+        "em_stake_arrow_install":    "安装与调试",
+        "em_stake_lbl_lights":       "路灯数量",
+        "em_stake_lbl_poles":        "灯杆数量",
+        "em_stake_lbl_baseline":     "本项目年度基线",
+        "em_stake_lbl_elec_om_sub":  "电费 · 运维费",
+        "em_stake_lbl_bline_detail": "电费 {b1} + 运维费 {b2}",
+        "em_stake_lbl_elec_reduc":   "电费节省",
+        "em_stake_lbl_om_reduc":     "运维节省（人工 + 维修）",
+        "em_stake_lbl_total_save":   "年总节省",
+        "em_stake_lbl_capex_avoid":  "避免的设备更换支出",
+        "em_stake_lbl_crosscheck":   "交叉验证 — 引擎毛节省：{gross} {currency}/年",
+        "em_stake_lbl_cont_targets": "合同价值与目标",
+        "em_stake_lbl_cont_total":   "合同参考总额",
+        "em_stake_lbl_tgt_savings":  "目标年节省",
+        "em_stake_lbl_mgmt_fee":     "托管费",
+        "em_stake_lbl_fee_pct":      "占毛节省的 {fee:.0f}%",
+        "em_stake_footer_text":      "所有金额单位为 {currency}。节能数据由惠普纳情景引擎测算，"
+                                     "实际结果受现场条件及运营情况影响。"
+                                     "历史审计数据来自客户提交的调查问卷（近三个财年）。",
 
         # Cost comparison tab
         "em_compare_title":   "年度成本对比：改造前 vs 改造后",
